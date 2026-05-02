@@ -1,90 +1,62 @@
-from PIL import Image, ImageDraw, ImageFont
-import os
-import random
-import math
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter, ImageOps
+import os, random, math, urllib.request, sys
+
+# ── Nature background photos (Unsplash, stable URLs) ──────────────────────────
+BG_PHOTOS = [
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1080&q=90',
+    'https://images.unsplash.com/photo-1476611338391-6f395a0dd82e?w=1080&q=90',
+    'https://images.unsplash.com/photo-1465188162913-8fb5709d6d57?w=1080&q=90',
+    'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=1080&q=90',
+    'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1080&q=90',
+]
 
 # ── Witty captions ────────────────────────────────────────────────────────────
-
 CAPTIONS = {
-    'tiny': [
-        "今天就意思意思，别在意",
-        "出门就是赢家，管它几公里",
-        "三公里以内，我叫它「热身」",
-        "三公里，聊胜于没",
-        "今天的任务：出门。完成！",
-        "小试牛刀，下次再说",
-        "我在「认真热身」，请尊重",
-    ],
-    'short': [
-        "四公里换一杯奶茶，血赚！",
-        "跑完了，今晚加餐有底气了",
-        "不多不少，刚好把自己跑废",
-        "五公里以内，我还是人",
-        "跑量在增，体重未知",
-        "只有装备是专业的，其他全是弱",
-        "有氧0分，出门100分",
-    ],
-    'medium': [
-        "阿姨，我不想跑步了！",
-        "腿已经不认识我了",
-        "跑完才发现，自己可能有点傻",
-        "散步数据，虚报里程",
-        "跑步使人快乐，但我不快乐",
-        "心率高得一塌糊涂，可能鞋子的锅",
-        "汗水换来的，只有更多汗水",
-        "比蜗牛还慢，但我在动",
-    ],
-    'long': [
-        "别人跑步有红包，凭啥我没有！",
-        "十公里，今晚睡觉腿自己动",
-        "有病！为什么要跑这么远！",
-        "身体废了，但打卡必须有",
-        "十公里，腿的葬礼已预约",
-        "除了打卡啥都干不成了",
-        "HR 爆表，猝死边缘徘徊",
-    ],
-    'insane': [
-        "医生说要锻炼，没说要要命！",
-        "这人有问题（指我自己）",
-        "半马在逃，我在追，全完了",
-        "只有装备是专业的，其他一塌糊涂",
-        "半马选手，脑子不太好",
-        "跑了这么远，今天能吃两碗饭",
-    ],
+    'tiny':   ["今天就意思意思，别在意", "出门就是赢家，管它几公里",
+               "三公里，聊胜于没", "今天的任务：出门。完成！",
+               "小试牛刀，下次再说", "我在「认真热身」，请尊重"],
+    'short':  ["四公里换一杯奶茶，血赚！", "跑完了，今晚加餐有底气了",
+               "不多不少，刚好把自己跑废", "五公里以内，我还是人",
+               "只有装备是专业的，其他全是弱", "有氧0分，出门100分"],
+    'medium': ["阿姨，我不想跑步了！", "腿已经不认识我了",
+               "跑完才发现，自己可能有点傻", "散步数据，虚报里程",
+               "跑步使人快乐，但我不快乐", "心率高得一塌糊涂，可能鞋子的锅",
+               "汗水换来的，只有更多汗水", "比蜗牛还慢，但我在动"],
+    'long':   ["别人跑步有红包，凭啥我没有！", "十公里，今晚睡觉腿自己动",
+               "有病！为什么要跑这么远！", "身体废了，但打卡必须有",
+               "十公里，腿的葬礼已预约", "除了打卡啥都干不成了",
+               "HR 爆表，猝死边缘徘徊"],
+    'insane': ["医生说要锻炼，没说要要命！", "这人有问题（指我自己）",
+               "半马在逃，我在追，全完了", "只有装备是专业的，其他一塌糊涂",
+               "半马选手，脑子不太好", "跑了这么远，今天能吃两碗饭"],
 }
+FAST_CAPTIONS = ["今天在飞，这不是跑步这是逃命！", "配速炸裂，腿不是我的了！",
+                 "这配速，我自己都不敢相信"]
+SLOW_CAPTIONS = ["散步plus，别拆穿我", "慢跑派，享受生活慢慢来",
+                 "配速嘛，慢就慢点，心态最重要"]
 
-FAST_CAPTIONS = [
-    "今天在飞，这不是跑步这是逃命！",
-    "配速炸裂，腿不是我的了！",
-    "这配速，我自己都不敢相信",
+# Side-comment pool — small annotations scattered around
+SIDE_COMMENTS = [
+    "只有装备是专业的", "伪跑鞋在逃", "心跳爆表", "比蜗牛还慢",
+    "汗臭味爆汗怪", "有氧0分", "纯靠意志力", "腿：我不认识你",
+    "重如铅软脚虾", "每步都是信仰", "跑量骗自己", "上坡要人命",
 ]
 
-SLOW_CAPTIONS = [
-    "散步plus，别拆穿我",
-    "慢跑派，享受生活慢慢来",
-    "配速嘛，慢就慢点，心态最重要",
-]
 
-
-def get_witty_caption(distance_km, pace_sec_per_km=None):
-    if pace_sec_per_km and pace_sec_per_km < 270:   # < 4:30/km
+def get_witty_caption(distance_km, pace_sec=None):
+    if pace_sec and pace_sec < 270:
         return random.choice(FAST_CAPTIONS)
-    if pace_sec_per_km and pace_sec_per_km > 420:   # > 7:00/km
+    if pace_sec and pace_sec > 420:
         return random.choice(SLOW_CAPTIONS)
-    if distance_km < 3:
-        return random.choice(CAPTIONS['tiny'])
-    elif distance_km < 5:
-        return random.choice(CAPTIONS['short'])
-    elif distance_km < 10:
-        return random.choice(CAPTIONS['medium'])
-    elif distance_km < 15:
-        return random.choice(CAPTIONS['long'])
-    else:
-        return random.choice(CAPTIONS['insane'])
+    if distance_km < 3:   pool = CAPTIONS['tiny']
+    elif distance_km < 5: pool = CAPTIONS['short']
+    elif distance_km < 10:pool = CAPTIONS['medium']
+    elif distance_km < 15:pool = CAPTIONS['long']
+    else:                  pool = CAPTIONS['insane']
+    return random.choice(pool)
 
 
-# ── Font helper ───────────────────────────────────────────────────────────────
-
+# ── Fonts ─────────────────────────────────────────────────────────────────────
 def find_font(size, bold=False):
     candidates = [
         '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc' if bold
@@ -95,238 +67,230 @@ def find_font(size, bold=False):
         '/System/Library/Fonts/PingFang.ttc',
         '/System/Library/Fonts/STHeiti Medium.ttc',
     ]
-    for path in candidates:
-        if os.path.exists(path):
+    for p in candidates:
+        if os.path.exists(p):
             try:
-                return ImageFont.truetype(path, size)
+                return ImageFont.truetype(p, size)
             except Exception:
                 continue
     return ImageFont.load_default()
 
 
 # ── Formatters ────────────────────────────────────────────────────────────────
-
 def fmt_duration(sec):
-    h = sec // 3600
-    m = (sec % 3600) // 60
-    s = sec % 60
-    if h > 0:
-        return f"{h}:{m:02d}:{s:02d}"
-    return f"{m}'{s:02d}\""
-
+    h = sec // 3600; m = (sec % 3600) // 60; s = sec % 60
+    return f"{h}:{m:02d}:{s:02d}" if h else f"{m}'{s:02d}\""
 
 def fmt_pace(speed_ms):
-    if not speed_ms or speed_ms == 0:
-        return "--"
+    if not speed_ms: return "--"
     sec = 1000 / speed_ms
-    return f"{int(sec // 60)}'{int(sec % 60):02d}\"/km"
+    return f"{int(sec//60)}'{int(sec%60):02d}\"/km"
 
 
-# ── Background drawing ────────────────────────────────────────────────────────
+# ── Background ────────────────────────────────────────────────────────────────
+def load_nature_bg(W, H, cache_path='/tmp/nature_bg_cached.jpg'):
+    try:
+        url = random.choice(BG_PHOTOS)
+        urllib.request.urlretrieve(url, cache_path)
+        bg = Image.open(cache_path).convert('RGB')
+    except Exception as e:
+        print(f"背景下载失败，使用纯色背景: {e}", file=sys.stderr)
+        bg = Image.new('RGB', (W, H), (80, 120, 60))
 
-def draw_night_bg(img):
-    """Dark navy-to-black gradient with subtle speed lines."""
-    draw = ImageDraw.Draw(img)
-    W, H = img.size
+    # Resize + crop to fill target size
+    bg_ratio  = bg.width / bg.height
+    tgt_ratio = W / H
+    if bg_ratio > tgt_ratio:
+        new_h = H; new_w = int(H * bg_ratio)
+    else:
+        new_w = W; new_h = int(W / bg_ratio)
+    bg = bg.resize((new_w, new_h), Image.LANCZOS)
+    left = (new_w - W) // 2; top = (new_h - H) // 2
+    bg = bg.crop((left, top, left + W, top + H))
 
-    # Vertical gradient
-    for y in range(H):
-        t = y / H
-        r = int(8  * (1 - t) + 2  * t)
-        g = int(12 * (1 - t) + 4  * t)
-        b = int(35 * (1 - t) + 10 * t)
-        draw.line([(0, y), (W, y)], fill=(r, g, b))
-
-    # Horizontal speed lines (decorative)
-    for i in range(60):
-        y   = 200 + i * 18
-        x0  = int(W * 0.05 * math.sin(i * 0.7))
-        ln  = int(W * (0.15 + 0.25 * ((i * 17) % 10) / 10))
-        lum = 25 + (i * 11) % 20
-        draw.line([(x0, y), (x0 + ln, y)], fill=(lum, lum + 15, lum + 40), width=1)
-
-
-def draw_city_silhouette(draw, W, H):
-    """Simple pixel city at the very bottom."""
-    # (x_start, width, height)
-    BLOCKS = [
-        (0,   75, 220), (80,  60, 165), (145, 80, 290), (230, 55, 195),
-        (290, 90, 325), (385, 60, 240), (450, 75, 265), (530, 55, 185),
-        (590, 85, 305), (680, 60, 215), (745, 80, 275), (830, 50, 172),
-        (885, 90, 310), (980, 60, 205), (1045,35, 250),
-    ]
-    FILL = (5, 7, 16)
-    WIN  = (255, 215, 80)
-
-    for bx, bw, bh in BLOCKS:
-        top = H - bh
-        draw.rectangle([bx, top, bx + bw, H], fill=FILL)
-        # Windows — deterministic grid, some lit up
-        for wy in range(top + 18, H - 22, 28):
-            for wx in range(bx + 10, bx + bw - 10, 18):
-                if (wx * 7 + wy * 3) % 5 != 0:
-                    draw.rectangle([wx, wy, wx + 8, wy + 12], fill=WIN)
+    # Cartoon filter: saturate + posterize + smooth
+    bg = ImageEnhance.Color(bg).enhance(1.8)
+    bg = ImageEnhance.Contrast(bg).enhance(1.15)
+    bg = ImageOps.posterize(bg, 5)
+    bg = bg.filter(ImageFilter.SMOOTH)
+    return bg
 
 
-def draw_glow(draw, cx, cy, radius, color):
-    """Paint a radial glow dot."""
-    for r in range(radius, 0, -4):
-        alpha = int(80 * (1 - r / radius))
-        c = tuple(min(255, v + alpha) for v in color[:3])
-        draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=c)
+# ── Rotated annotation ────────────────────────────────────────────────────────
+def paste_rotated(base, text, cx, cy, angle, font, fg, bg_fill=None, strike=False):
+    """Draw text rotated at `angle` degrees, centered at (cx, cy)."""
+    tmp_size = 1200
+    tmp = Image.new('RGBA', (tmp_size, tmp_size), (0, 0, 0, 0))
+    td  = ImageDraw.Draw(tmp)
+
+    bb  = td.textbbox((0, 0), text, font=font)
+    tw, th = bb[2]-bb[0], bb[3]-bb[1]
+    tx, ty = (tmp_size-tw)//2, (tmp_size-th)//2
+
+    if bg_fill:
+        pad = 12
+        td.rounded_rectangle([tx-pad, ty-pad, tx+tw+pad, ty+th+pad],
+                              radius=10, fill=bg_fill)
+    td.text((tx, ty), text, font=font, fill=fg)
+    if strike:
+        mid_y = ty + th // 2
+        td.line([(tx-4, mid_y), (tx+tw+4, mid_y)], fill=fg, width=4)
+
+    tmp = tmp.rotate(angle, resample=Image.BICUBIC)
+    ox  = cx - tmp_size // 2
+    oy  = cy - tmp_size // 2
+    base.alpha_composite(tmp, (ox, oy))
+
+
+# ── Arrow decoration ──────────────────────────────────────────────────────────
+def draw_arrow(draw, x1, y1, x2, y2, color, width=3):
+    draw.line([(x1, y1), (x2, y2)], fill=color, width=width)
+    angle = math.atan2(y2-y1, x2-x1)
+    for a in [angle + 2.5, angle - 2.5]:
+        draw.line([(x2, y2), (x2 - 18*math.cos(a), y2 - 18*math.sin(a))],
+                  fill=color, width=width)
 
 
 # ── Main card ─────────────────────────────────────────────────────────────────
-
 def create_xhs_card(distance_km, duration_sec, speed_ms,
                     heart_rate=None, calories=None, date_str=None,
                     output_path='/tmp/xhs_card.png'):
-
     W, H = 1080, 1350
 
-    # ── Step 1: RGB background ────────────────────────
-    img  = Image.new('RGB', (W, H), (8, 12, 35))
-    draw_night_bg(img)
-    draw = ImageDraw.Draw(img)
+    # Background
+    bg   = load_nature_bg(W, H)
+    base = bg.convert('RGBA')
 
-    # Decorative glow spots (top-right and bottom-left, subtle)
-    draw_glow(draw, W - 80, 120, 100, (20, 45, 160))
-    draw_glow(draw, 60,     H - 280, 80, (60, 20, 140))
+    # Light white fog overlay — keeps text readable
+    fog  = Image.new('RGBA', (W, H), (255, 255, 255, 55))
+    base = Image.alpha_composite(base, fog)
 
-    # City silhouette
-    draw_city_silhouette(draw, W, H)
+    # Drawing layer
+    draw = ImageDraw.Draw(base)
 
-    # ── Step 2: RGBA compositing for glass card ───────
-    img  = img.convert('RGBA')
-    card = Image.new('RGBA', (W, H), (0, 0, 0, 0))
-    cd   = ImageDraw.Draw(card)
-
-    CX, CY, CW, CH = 60, 60, W - 120, 680
-    cd.rounded_rectangle(
-        [CX, CY, CX + CW, CY + CH],
-        radius=28,
-        fill=(8, 18, 55, 195),
-    )
-    cd.rounded_rectangle(
-        [CX, CY, CX + CW, CY + CH],
-        radius=28,
-        outline=(70, 120, 255, 140),
-        width=2,
-    )
-    img  = Image.alpha_composite(img, card)
-    draw = ImageDraw.Draw(img)
-
-    # ── Step 3: Stats content inside card ─────────────
-    f_date    = find_font(30)
-    f_huge    = find_font(230, bold=True)
-    f_km      = find_font(54)
-    f_val     = find_font(68, bold=True)
-    f_lbl     = find_font(34)
-    f_cal     = find_font(38, bold=True)
-    f_caption = find_font(80, bold=True)
+    # ── Fonts ─────────────────────────────────────────
+    f_huge    = find_font(200, bold=True)
+    f_km      = find_font(52,  bold=True)
+    f_ann     = find_font(44,  bold=True)   # annotations
+    f_side    = find_font(32)               # small side comments
+    f_caption = find_font(82,  bold=True)
     f_tag     = find_font(30)
-    f_foot    = find_font(28)
+    f_date    = find_font(34)
 
-    BLUE_LIGHT = (150, 180, 255)
-    WHITE      = (255, 255, 255)
-    ORANGE     = (255, 170,  50)
-    YELLOW     = (255, 215,  50)
-    MUTED      = (70,  90, 130)
-
-    # Date top-left
-    if date_str:
-        draw.text((CX + 30, CY + 22), date_str, font=f_date, fill=BLUE_LIGHT)
-
-    # Divider under date
-    draw.rectangle([CX + 30, CY + 62, CX + CW - 30, CY + 64], fill=(50, 70, 140))
-
-    # Huge distance number
-    dist_str = f"{distance_km:.1f}"
-    bb  = draw.textbbox((0, 0), dist_str, font=f_huge)
-    dw  = bb[2] - bb[0]
-    draw.text((W // 2 - dw // 2, CY + 68), dist_str, font=f_huge, fill=WHITE)
-
-    # KM unit
-    bb2 = draw.textbbox((0, 0), "KM", font=f_km)
-    draw.text((W // 2 - (bb2[2] - bb2[0]) // 2, CY + 300), "KM", font=f_km, fill=BLUE_LIGHT)
-
-    # Three secondary stats
     pace_sec = (1000 / speed_ms) if speed_ms else None
-    stats = [
-        ("时  长", fmt_duration(duration_sec)),
-        ("配  速", fmt_pace(speed_ms)),
-        ("心  率", f"{int(heart_rate)} bpm" if heart_rate else "--"),
-    ]
-    col_w = CW // 3
-    stat_y = CY + 395
 
-    for i, (lbl, val) in enumerate(stats):
-        cx = CX + i * col_w + col_w // 2
+    # ── Date stamp ────────────────────────────────────
+    if date_str:
+        draw.text((50, 44), date_str, font=f_date, fill=(255, 255, 255),
+                  stroke_width=3, stroke_fill=(0, 0, 0))
 
-        lb = draw.textbbox((0, 0), lbl, font=f_lbl)
-        draw.text((cx - (lb[2] - lb[0]) // 2, stat_y), lbl, font=f_lbl, fill=BLUE_LIGHT)
+    # ── Big distance (center-top, slight tilt) ────────
+    dist_str = f"{distance_km:.1f}"
+    bb = draw.textbbox((0,0), dist_str, font=f_huge)
+    dw, dh = bb[2]-bb[0], bb[3]-bb[1]
+    paste_rotated(base, dist_str, W//2, 320, -3, f_huge,
+                  fg=(255,255,255), bg_fill=None)
+    # "KM" under it
+    paste_rotated(base, "KM", W//2+dw//2-30, 430, -3, f_km,
+                  fg=(255, 230, 50))
 
-        vb = draw.textbbox((0, 0), val, font=f_val)
-        draw.text((cx - (vb[2] - vb[0]) // 2, stat_y + 46), val, font=f_val, fill=WHITE)
+    draw = ImageDraw.Draw(base)  # refresh after alpha_composite calls
 
-        if i < 2:
-            draw.rectangle(
-                [CX + (i + 1) * col_w - 1, stat_y, CX + (i + 1) * col_w + 1, stat_y + 130],
-                fill=(50, 70, 140),
-            )
+    # ── Scattered stat annotations ────────────────────
+    RED    = (220,  50,  50)
+    GREEN  = ( 30, 140,  60)
+    BLUE   = ( 30,  80, 200)
+    ORANGE = (220, 120,  20)
+    BLACK  = ( 20,  20,  20)
+    WHITE_BG = (255, 255, 255, 210)
 
-    # Calories strip at bottom of card
-    if calories:
-        cal_text = f"本次消耗  {int(calories)} 大卡"
-        cb  = draw.textbbox((0, 0), cal_text, font=f_cal)
-        draw.text((W // 2 - (cb[2] - cb[0]) // 2, CY + CH - 72),
-                  cal_text, font=f_cal, fill=ORANGE)
+    # Time — top-left, tilted left
+    paste_rotated(base,
+                  f"时长  {fmt_duration(duration_sec)}",
+                  200, 600, -12, f_ann, fg=BLACK, bg_fill=(255,255,255,200))
+    draw_arrow(ImageDraw.Draw(base), 300, 630, 380, 600, GREEN)
 
-    # ── Step 4: Big humorous caption ──────────────────
-    caption = get_witty_caption(distance_km, pace_sec)
-    cap_y   = CY + CH + 55
+    # Pace — top-right, tilted right
+    pace_label = fmt_pace(speed_ms)
+    paste_rotated(base,
+                  f"配速  {pace_label}",
+                  820, 580, 10, f_ann, fg=BLACK, bg_fill=(255,255,255,200))
 
-    # Auto-shrink font to fit within card width
-    cap_font = f_caption
-    cap_size = 80
-    while cap_size > 40:
-        cb = draw.textbbox((0, 0), caption, font=cap_font)
-        if (cb[2] - cb[0]) <= W - 80:
+    # Heart rate — left side
+    hr_text = f"心率  {int(heart_rate)} bpm" if heart_rate else "心率  未记录"
+    paste_rotated(base, hr_text, 210, 760, -8, f_ann, fg=RED,
+                  bg_fill=(255, 240, 240, 210))
+
+    # Calories — right side
+    cal_text = f"消耗  {int(calories)} 大卡" if calories else "消耗  未记录"
+    paste_rotated(base, cal_text, 840, 730, 6, f_ann, fg=ORANGE,
+                  bg_fill=(255, 248, 230, 210))
+
+    # Two random side comments (small, scattered)
+    comments = random.sample(SIDE_COMMENTS, 2)
+    paste_rotated(base, comments[0], 180, 920, -15, f_side,
+                  fg=GREEN, bg_fill=(220,255,220,180))
+    paste_rotated(base, comments[1], 870, 870, 18,  f_side,
+                  fg=BLUE,  bg_fill=(220,230,255,180))
+
+    # ── "打卡完成" stamp ───────────────────────────────
+    draw = ImageDraw.Draw(base)
+    f_stamp = find_font(38, bold=True)
+    paste_rotated(base, "打卡完成 ✓", W-160, 120, 15, f_stamp,
+                  fg=(200,30,30), bg_fill=None)
+
+    # ── Big humorous caption (bottom banner) ──────────
+    caption  = get_witty_caption(distance_km, pace_sec)
+    banner_y = 1020
+    banner_h = 120
+
+    # Banner background
+    banner = Image.new('RGBA', (W, banner_h), (0, 0, 0, 0))
+    bd     = ImageDraw.Draw(banner)
+    bd.rectangle([0, 0, W, banner_h], fill=(255, 200, 0, 230))
+    base.alpha_composite(banner, (0, banner_y))
+
+    draw = ImageDraw.Draw(base)
+
+    # Auto-shrink caption font
+    cap_font = f_caption; cap_size = 82
+    while cap_size > 38:
+        cb = draw.textbbox((0,0), caption, font=cap_font)
+        if (cb[2]-cb[0]) <= W - 60:
             break
         cap_size -= 4
         cap_font = find_font(cap_size, bold=True)
 
-    cb = draw.textbbox((0, 0), caption, font=cap_font)
-    cw = cb[2] - cb[0]
-    cx = W // 2 - cw // 2
-
+    cb = draw.textbbox((0,0), caption, font=cap_font)
+    cw = cb[2]-cb[0]
     # Shadow
-    draw.text((cx + 4, cap_y + 4), caption, font=cap_font, fill=(160, 50, 0))
+    draw.text((W//2 - cw//2 + 3, banner_y + (banner_h - (cb[3]-cb[1]))//2 + 3),
+              caption, font=cap_font, fill=(160, 80, 0))
     # Main
-    draw.text((cx, cap_y), caption, font=cap_font, fill=YELLOW)
+    draw.text((W//2 - cw//2, banner_y + (banner_h - (cb[3]-cb[1]))//2),
+              caption, font=cap_font, fill=(30, 20, 0))
 
-    # ── Step 5: Hashtags ──────────────────────────────
+    # ── Hashtags ──────────────────────────────────────
     tags = "#跑步  #运动打卡  #跑步打卡  #今日份运动"
-    tb   = draw.textbbox((0, 0), tags, font=f_tag)
-    draw.text((W // 2 - (tb[2] - tb[0]) // 2, cap_y + 100), tags, font=f_tag, fill=MUTED)
+    draw.text((W//2, 1175), tags, font=f_tag, fill=(255,255,255),
+              anchor='ma', stroke_width=2, stroke_fill=(0,0,0))
 
-    # ── Step 6: Footer ────────────────────────────────
-    draw.text((W // 2, H - 55), "via Strava", font=f_foot, fill=(45, 60, 90), anchor='ma')
+    # ── Via Strava ────────────────────────────────────
+    f_foot = find_font(28)
+    draw.text((W//2, H-40), "via Strava", font=f_foot, fill=(200,200,200),
+              anchor='ma', stroke_width=1, stroke_fill=(0,0,0))
 
-    # ── Save ──────────────────────────────────────────
-    img.convert('RGB').save(output_path, quality=95)
+    base.convert('RGB').save(output_path, quality=95)
     return output_path
 
 
-# ── XHS text caption ──────────────────────────────────────────────────────────
-
+# ── Text caption for XHS / Twitter ───────────────────────────────────────────
 def get_xhs_text_caption(distance_km, duration_sec, speed_ms,
                           heart_rate=None, calories=None):
     pace_sec = (1000 / speed_ms) if speed_ms else None
     witty    = get_witty_caption(distance_km, pace_sec)
     hr_str   = f"{int(heart_rate)} bpm" if heart_rate else "未记录"
     cal_str  = f"{int(calories)} 大卡" if calories else "未记录"
-
     return f"""{witty} !!
 
 今日跑步数据 ↓
