@@ -1,0 +1,4 @@
+requests
+staticmap
+polyline
+Pillow
