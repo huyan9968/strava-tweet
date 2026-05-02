@@ -2,8 +2,10 @@ name: Strava 跑步记录
 
 on:
   schedule:
-    - cron: '0 13 * * *'  # 每天北京时间 21:00 运行
-  workflow_dispatch:        # 支持手动触发
+    - cron: '0 13 * * *'   # 每天北京时间 21:00 兜底运行
+  workflow_dispatch:         # 支持手动触发
+  repository_dispatch:       # Strava Webhook 实时触发
+    types: [strava_activity]
 
 jobs:
   generate-tweet:
