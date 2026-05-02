@@ -149,8 +149,8 @@ def generate_html(data):
     activities = data.get('activities', [])
     stats = compute_stats(activities)
 
-    # 最近的5次跑步
-    recent = activities[:5]
+    # 最近的跑步记录（显示全部）
+    recent = activities  # 显示所有记录
 
     # Chart.js 月度数据
     monthly_chart = build_monthly_chart(activities)
