@@ -150,14 +150,16 @@ def main():
 
     detail = get_activity_detail(token, activity_id)
 
-    distance = detail['distance'] / 1000
-    duration = detail['moving_time']
-    pace = format_pace(detail['average_speed'])
-    heart_rate = detail.get('average_heartrate')
-    calories = detail.get('calories')
+    distance    = detail['distance'] / 1000
+    duration    = detail['moving_time']
+    speed_ms    = detail.get('average_speed', 0)
+    heart_rate  = detail.get('average_heartrate')
+    calories    = detail.get('calories')
+    date_str    = datetime.now().strftime('%Y-%m-%d')
 
-    hr_str = f"{int(heart_rate)} bpm" if heart_rate else "未记录"
+    hr_str  = f"{int(heart_rate)} bpm" if heart_rate else "未记录"
     cal_str = f"{int(calories)} 大卡" if calories else "未记录"
+    pace    = format_pace(speed_ms)
 
     tweet = f"""今日跑步 🏃
 
@@ -171,7 +173,7 @@ def main():
 
     print(f"\n推文内容：\n{tweet}\n")
 
-    # 生成路线地图
+    # ── 生成路线地图 ──────────────────────────────────
     map_url = None
     polyline_str = (detail.get('map') or {}).get('polyline') or (detail.get('map') or {}).get('summary_polyline')
     if polyline_str:
@@ -181,14 +183,41 @@ def main():
             print("上传地图...")
             map_url = upload_map_to_repo(map_file, activity_id)
 
-    # 创建 GitHub Issue
-    date_str = datetime.now().strftime('%Y-%m-%d')
+    # ── 生成小红书卡片 ────────────────────────────────
+    xhs_card_url = None
+    xhs_caption  = None
+    try:
+        from generate_xhs_card import create_xhs_card, get_xhs_text_caption
+        print("生成小红书卡片...")
+        card_path = create_xhs_card(
+            distance_km  = distance,
+            duration_sec = duration,
+            speed_ms     = speed_ms,
+            heart_rate   = heart_rate,
+            calories     = calories,
+            date_str     = date_str,
+            output_path  = f'/tmp/xhs_{activity_id}.png',
+        )
+        xhs_caption = get_xhs_text_caption(distance, duration, speed_ms, heart_rate, calories)
+        print("上传小红书卡片...")
+        xhs_card_url = upload_map_to_repo(card_path, f'xhs_{activity_id}')
+    except Exception as e:
+        print(f"小红书卡片生成失败: {e}", file=sys.stderr)
+
+    # ── 创建 GitHub Issue ─────────────────────────────
     title = f"🏃 跑步记录 {date_str}"
 
-    body = f"## 推文草稿\n\n```\n{tweet}\n```\n\n"
+    body  = f"## Twitter 推文草稿\n\n```\n{tweet}\n```\n\n"
     body += f"**Strava 链接**：https://www.strava.com/activities/{activity_id}\n\n"
     if map_url:
         body += f"**路线地图**：\n\n![路线地图]({map_url})\n\n"
+
+    body += "---\n\n## 小红书草稿\n\n"
+    if xhs_caption:
+        body += f"**文案**（复制粘贴）：\n\n```\n{xhs_caption}\n```\n\n"
+    if xhs_card_url:
+        body += f"**图片卡片**（长按保存）：\n\n![小红书卡片]({xhs_card_url})\n\n"
+
     body += "---\n*由 GitHub Actions 自动生成*"
 
     issue_url = create_github_issue(title, body)
