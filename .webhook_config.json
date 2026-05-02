@@ -1,0 +1,9 @@
+{
+    "client_id": "234027",
+    "client_secret": "ecc52944dc687119df47565de14f2b72f2b3bd21",
+    "refresh_token": "10afd7dae11c5e0aa7063d09b7cb2c7e8a102332",
+    "callback_url": "*-dry-bird-cf21.canghai8005.workers.dev",
+    "verify_token": "my-strava-webhook-2024",
+    "webhook_id": "",
+    "status": ""
+}

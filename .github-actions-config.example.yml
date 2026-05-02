@@ -1,11 +1,13 @@
+# GitHub Actions 配置示例
+# 此文件仅用于参考
 
 name: Strava 跑步记录
 
 on:
   schedule:
-    - cron: '0 13 * * *'   # 每天北京时间 21:00 兜底运行
-  workflow_dispatch:         # 支持手动触发
-  repository_dispatch:       # Strava Webhook 实时触发
+    - cron: '0 13 * * *'   # 每天北京时间 21:00
+  workflow_dispatch:
+  repository_dispatch:
     types: [strava_activity]
 
 jobs:
@@ -23,13 +25,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Chinese fonts
-        run: sudo apt-get install -y fonts-noto-cjk
-
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate tweet draft
+      - name: Generate tweet
         env:
           STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}

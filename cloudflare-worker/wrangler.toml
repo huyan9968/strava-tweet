@@ -1,0 +1,4 @@
+name = "strava-webhook"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+account_id = "f9ca1f028ab878a097d798a4671281d8"

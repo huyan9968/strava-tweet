@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跑步日记 - 我的跑步记录</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 2rem 1rem; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .stat-card .value { font-size: 2rem; font-weight: bold; color: #1e40af; }
+        .stat-card .label { color: #64748b; margin-top: 0.5rem; font-size: 0.9rem; }
+        .chart-section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .chart-section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e40af; }
+        .runs-list { display: flex; flex-direction: column; gap: 1rem; }
+        .run-item { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; transition: transform 0.2s; }
+        .run-item:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .run-date { font-weight: bold; color: #1e40af; min-width: 100px; }
+        .run-stats { flex: 1; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .run-stat { font-size: 0.9rem; color: #64748b; }
+        .run-stat strong { color: #1e293b; }
+        .run-map-btn { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        .run-map-btn:hover { opacity: 0.9; }
+        #map { width: 100%; height: 400px; border-radius: 12px; margin-top: 1rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .badge-run { background: #10b981; color: white; }
+        @media (max-width: 640px) { .run-item { flex-direction: column; align-items: flex-start; } .run-stats { width: 100%; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🏃 跑步日记</h1>
+        <p>记录每一次奔跑的足迹</p>
+    </header>
+
+    <div class="container">
+        <!-- 统计面板 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value">12</div>
+                <div class="label">总跑步次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">121.9</div>
+                <div class="label">总距离 (km)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">1</div>
+                <div class="label">本月次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">15.6</div>
+                <div class="label">本月距离 (km)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">7314</div>
+                <div class="label">总消耗 (卡路里)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">1820</div>
+                <div class="label">总爬升 (m)</div>
+            </div>
+        </div>
+
+        <!-- 月度趋势图 -->
+        <div class="chart-section">
+            <h2>📈 月度跑步统计</h2>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+
+        <!-- 路线热力图 -->
+        <div class="chart-section">
+            <h2>🗺️ 跑步路线地图</h2>
+            <div id="map"></div>
+        </div>
+
+        <!-- 最近跑步记录 -->
+        <div class="chart-section">
+            <h2>📋 最近跑步记录</h2>
+            <div class="runs-list">
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-08</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>晨间轻松跑</strong></span>
+                        <span class="run-stat">📏 5.2 km</span>
+                        <span class="run-stat">⏱️ 28m 0s</span>
+                        <span class="run-stat">🏃 5'23"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 312 kcal</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('1834000001')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-02</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>午间节奏跑</strong></span>
+                        <span class="run-stat">📏 8.5 km</span>
+                        <span class="run-stat">⏱️ 51m 0s</span>
+                        <span class="run-stat">🏃 6'00"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 510 kcal</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('1834000002')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-04</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>晚间恢复跑</strong></span>
+                        <span class="run-stat">📏 6.0 km</span>
+                        <span class="run-stat">⏱️ 37m 0s</span>
+                        <span class="run-stat">🏃 6'10"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 360 kcal</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('1834000003')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-02</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>周末越野跑</strong></span>
+                        <span class="run-stat">📏 12.3 km</span>
+                        <span class="run-stat">⏱️ 1h 32m 0s</span>
+                        <span class="run-stat">🏃 7'28"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 738 kcal</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('1834000004')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-30</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>间歇训练</strong></span>
+                        <span class="run-stat">📏 7.8 km</span>
+                        <span class="run-stat">⏱️ 41m 0s</span>
+                        <span class="run-stat">🏃 5'15"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 468 kcal</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('1834000005')">查看地图</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 月度统计图
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+    labels: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11'],
+    datasets: [{
+        label: '跑步次数',
+        data: [1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4
+    }, {
+        label: '距离(km)',
+        data: [5.2, 8.5, 6.0, 20.1, 15.6, 4.5, 18.2, 6.8, 10.0, 21.5, 5.5],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        yAxisID: 'y1'
+    }]},
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: '次数' } },
+                    y1: { type: 'linear', display: true, position: 'right',
+                        title: { display: true, text: '距离(km)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+
+        // 地图
+        const map = L.map('map').setView([39.9042, 116.4074], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 添加配速热力线
+        const paceLines = [];
+        paceLines.forEach(line => {
+            L.polyline(line.coords, { color: line.color, weight: line.weight, opacity: 0.7 }).addTo(map);
+        });
+
+        function showMap(id) {
+            const run = {"1834000001": {"date": "2026-01-08", "title": "\u6668\u95f4\u8f7b\u677e\u8dd1", "distance": 5.2, "duration": 1680, "calories": 312, "elevation_gain": 45, "avg_hr": 158, "max_hr": 166, "avg_pace": 5.384615384615384, "speed_ms": 3.0952380952380953, "id": 1834000001, "sport_type": "Run"}, "1834000002": {"date": "2026-02-02", "title": "\u5348\u95f4\u8282\u594f\u8dd1", "distance": 8.5, "duration": 3060, "calories": 510, "elevation_gain": 60, "avg_hr": 157, "max_hr": 172, "avg_pace": 6.0, "speed_ms": 2.7777777777777777, "id": 1834000002, "sport_type": "Run"}, "1834000003": {"date": "2026-03-04", "title": "\u665a\u95f4\u6062\u590d\u8dd1", "distance": 6.0, "duration": 2220, "calories": 360, "elevation_gain": 35, "avg_hr": 150, "max_hr": 161, "avg_pace": 6.166666666666667, "speed_ms": 2.7027027027027026, "id": 1834000003, "sport_type": "Run"}, "1834000004": {"date": "2026-04-02", "title": "\u5468\u672b\u8d8a\u91ce\u8dd1", "distance": 12.3, "duration": 5520, "calories": 738, "elevation_gain": 320, "avg_hr": 136, "max_hr": 184, "avg_pace": 7.479674796747967, "speed_ms": 2.2282608695652173, "id": 1834000004, "sport_type": "Run"}, "1834000005": {"date": "2026-04-30", "title": "\u95f4\u6b47\u8bad\u7ec3", "distance": 7.8, "duration": 2460, "calories": 468, "elevation_gain": 55, "avg_hr": 148, "max_hr": 169, "avg_pace": 5.256410256410257, "speed_ms": 3.1707317073170733, "id": 1834000005, "sport_type": "Run"}, "1834000006": {"date": "2026-05-28", "title": "\u957f\u8ddd\u79bb\u6162\u8dd1", "distance": 15.6, "duration": 6240, "calories": 936, "elevation_gain": 180, "avg_hr": 136, "max_hr": 176, "avg_pace": 6.666666666666667, "speed_ms": 2.5, "id": 1834000006, "sport_type": "Run"}, "1834000007": {"date": "2026-06-23", "title": "\u6668\u8dd1\u70ed\u8eab", "distance": 4.5, "duration": 1500, "calories": 270, "elevation_gain": 30, "avg_hr": 146, "max_hr": 165, "avg_pace": 5.555555555555555, "speed_ms": 3.0, "id": 1834000007, "sport_type": "Run"}, "1834000008": {"date": "2026-07-21", "title": "\u5c71\u5730\u8d8a\u91ce", "distance": 18.2, "duration": 7560, "calories": 1092, "elevation_gain": 650, "avg_hr": 157, "max_hr": 164, "avg_pace": 6.923076923076923, "speed_ms": 2.4074074074074074, "id": 1834000008, "sport_type": "Run"}, "1834000009": {"date": "2026-08-18", "title": "\u8f7b\u677e\u6162\u8dd1", "distance": 6.8, "duration": 2640, "calories": 408, "elevation_gain": 42, "avg_hr": 136, "max_hr": 163, "avg_pace": 6.470588235294118, "speed_ms": 2.5757575757575757, "id": 1834000009, "sport_type": "Run"}, "1834000010": {"date": "2026-09-19", "title": "\u8282\u594f\u8dd1\u8bad\u7ec3", "distance": 10.0, "duration": 3300, "calories": 600, "elevation_gain": 85, "avg_hr": 148, "max_hr": 178, "avg_pace": 5.5, "speed_ms": 3.0303030303030303, "id": 1834000010, "sport_type": "Run"}, "1834000011": {"date": "2026-10-14", "title": "\u5468\u672b\u957f\u8dd1", "distance": 21.5, "duration": 8700, "calories": 1290, "elevation_gain": 280, "avg_hr": 146, "max_hr": 181, "avg_pace": 6.744186046511628, "speed_ms": 2.471264367816092, "id": 1834000011, "sport_type": "Run"}, "1834000012": {"date": "2026-11-11", "title": "\u6062\u590d\u6027\u6162\u8dd1", "distance": 5.5, "duration": 1860, "calories": 330, "elevation_gain": 38, "avg_hr": 141, "max_hr": 185, "avg_pace": 5.636363636363637, "speed_ms": 2.956989247311828, "id": 1834000012, "sport_type": "Run"}};
+            const r = run[id] || {};
+            if (r.polyline) {
+                const coords = polyline.decode(r.polyline);
+                map.fitBounds([coords]);
+                L.polyline(coords, {color: '#10b981', weight: 6}).addTo(map);
+                const popup = L.popup()
+                    .setLatLng(coords[Math.floor(coords.length/2)])
+                    .setContent(`<b>${r.title || '跑步记录'}</b><br/>距离: ${r.distance} km<br/>配速: ${Math.round(1000/r.speed_ms)}分/公里`)
+                    .openOn(map);
+            }
+        }
+
+        // polyline解码库
+        var polyline = {};
+        polyline.decode = function(str) {
+            if (!str) return [];
+            let index = 0, lat = 0, lng = 0, coordinates = [];
+            let shift, result, byte;
+            while (index < str.length) {
+                byte = null; shift = 0; result = 0;
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+                lat += ((result & 1) ? ~(result >> 1) : (result >> 1));
+                shift = 0; result = 0;
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+                lng += ((result & 1) ? ~(result >> 1) : (result >> 1));
+                coordinates.push([lat * 1e-5, lng * 1e-5]);
+            }
+            return coordinates;
+        };
+    </script>
+</body>
+</html>

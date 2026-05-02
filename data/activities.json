@@ -1,0 +1,244 @@
+{
+  "total_activities": 12,
+  "total_distance": 121.9,
+  "total_duration": 46740,
+  "total_calories": 7314,
+  "activities": [
+    {
+      "date": "2026-01-08",
+      "title": "晨间轻松跑",
+      "distance": 5.2,
+      "duration": 1680,
+      "calories": 312,
+      "elevation_gain": 45,
+      "avg_hr": 158,
+      "max_hr": 166,
+      "avg_pace": 5.384615384615384,
+      "speed_ms": 3.0952380952380953,
+      "id": 1834000001,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-02-02",
+      "title": "午间节奏跑",
+      "distance": 8.5,
+      "duration": 3060,
+      "calories": 510,
+      "elevation_gain": 60,
+      "avg_hr": 157,
+      "max_hr": 172,
+      "avg_pace": 6.0,
+      "speed_ms": 2.7777777777777777,
+      "id": 1834000002,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-03-04",
+      "title": "晚间恢复跑",
+      "distance": 6.0,
+      "duration": 2220,
+      "calories": 360,
+      "elevation_gain": 35,
+      "avg_hr": 150,
+      "max_hr": 161,
+      "avg_pace": 6.166666666666667,
+      "speed_ms": 2.7027027027027026,
+      "id": 1834000003,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-04-02",
+      "title": "周末越野跑",
+      "distance": 12.3,
+      "duration": 5520,
+      "calories": 738,
+      "elevation_gain": 320,
+      "avg_hr": 136,
+      "max_hr": 184,
+      "avg_pace": 7.479674796747967,
+      "speed_ms": 2.2282608695652173,
+      "id": 1834000004,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-04-30",
+      "title": "间歇训练",
+      "distance": 7.8,
+      "duration": 2460,
+      "calories": 468,
+      "elevation_gain": 55,
+      "avg_hr": 148,
+      "max_hr": 169,
+      "avg_pace": 5.256410256410257,
+      "speed_ms": 3.1707317073170733,
+      "id": 1834000005,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-05-28",
+      "title": "长距离慢跑",
+      "distance": 15.6,
+      "duration": 6240,
+      "calories": 936,
+      "elevation_gain": 180,
+      "avg_hr": 136,
+      "max_hr": 176,
+      "avg_pace": 6.666666666666667,
+      "speed_ms": 2.5,
+      "id": 1834000006,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-06-23",
+      "title": "晨跑热身",
+      "distance": 4.5,
+      "duration": 1500,
+      "calories": 270,
+      "elevation_gain": 30,
+      "avg_hr": 146,
+      "max_hr": 165,
+      "avg_pace": 5.555555555555555,
+      "speed_ms": 3.0,
+      "id": 1834000007,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-07-21",
+      "title": "山地越野",
+      "distance": 18.2,
+      "duration": 7560,
+      "calories": 1092,
+      "elevation_gain": 650,
+      "avg_hr": 157,
+      "max_hr": 164,
+      "avg_pace": 6.923076923076923,
+      "speed_ms": 2.4074074074074074,
+      "id": 1834000008,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-08-18",
+      "title": "轻松慢跑",
+      "distance": 6.8,
+      "duration": 2640,
+      "calories": 408,
+      "elevation_gain": 42,
+      "avg_hr": 136,
+      "max_hr": 163,
+      "avg_pace": 6.470588235294118,
+      "speed_ms": 2.5757575757575757,
+      "id": 1834000009,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-09-19",
+      "title": "节奏跑训练",
+      "distance": 10.0,
+      "duration": 3300,
+      "calories": 600,
+      "elevation_gain": 85,
+      "avg_hr": 148,
+      "max_hr": 178,
+      "avg_pace": 5.5,
+      "speed_ms": 3.0303030303030303,
+      "id": 1834000010,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-10-14",
+      "title": "周末长跑",
+      "distance": 21.5,
+      "duration": 8700,
+      "calories": 1290,
+      "elevation_gain": 280,
+      "avg_hr": 146,
+      "max_hr": 181,
+      "avg_pace": 6.744186046511628,
+      "speed_ms": 2.471264367816092,
+      "id": 1834000011,
+      "sport_type": "Run"
+    },
+    {
+      "date": "2026-11-11",
+      "title": "恢复性慢跑",
+      "distance": 5.5,
+      "duration": 1860,
+      "calories": 330,
+      "elevation_gain": 38,
+      "avg_hr": 141,
+      "max_hr": 185,
+      "avg_pace": 5.636363636363637,
+      "speed_ms": 2.956989247311828,
+      "id": 1834000012,
+      "sport_type": "Run"
+    }
+  ],
+  "monthly_stats": {
+    "2026-01": {
+      "count": 1,
+      "distance": 5.2,
+      "duration": 1680,
+      "calories": 312
+    },
+    "2026-02": {
+      "count": 1,
+      "distance": 8.5,
+      "duration": 3060,
+      "calories": 510
+    },
+    "2026-03": {
+      "count": 1,
+      "distance": 6.0,
+      "duration": 2220,
+      "calories": 360
+    },
+    "2026-04": {
+      "count": 2,
+      "distance": 20.1,
+      "duration": 7980,
+      "calories": 1206
+    },
+    "2026-05": {
+      "count": 1,
+      "distance": 15.6,
+      "duration": 6240,
+      "calories": 936
+    },
+    "2026-06": {
+      "count": 1,
+      "distance": 4.5,
+      "duration": 1500,
+      "calories": 270
+    },
+    "2026-07": {
+      "count": 1,
+      "distance": 18.2,
+      "duration": 7560,
+      "calories": 1092
+    },
+    "2026-08": {
+      "count": 1,
+      "distance": 6.8,
+      "duration": 2640,
+      "calories": 408
+    },
+    "2026-09": {
+      "count": 1,
+      "distance": 10.0,
+      "duration": 3300,
+      "calories": 600
+    },
+    "2026-10": {
+      "count": 1,
+      "distance": 21.5,
+      "duration": 8700,
+      "calories": 1290
+    },
+    "2026-11": {
+      "count": 1,
+      "distance": 5.5,
+      "duration": 1860,
+      "calories": 330
+    }
+  }
+}

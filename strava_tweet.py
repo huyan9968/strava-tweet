@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import json
 import base64
 import requests
 from datetime import datetime
@@ -8,8 +9,11 @@ from datetime import datetime
 STRAVA_CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
 STRAVA_CLIENT_SECRET = os.environ['STRAVA_CLIENT_SECRET']
 STRAVA_REFRESH_TOKEN = os.environ['STRAVA_REFRESH_TOKEN']
+STRAVA_VERIFY_TOKEN = os.environ.get('STRAVA_VERIFY_TOKEN', '')
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', '')
-GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY', '')
+if not GITHUB_TOKEN and 'GITHUB_TOKEN' in os.environ:
+    GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
+GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY', 'huyan9968/strava-tweet')
 
 
 def get_strava_token():
@@ -135,6 +139,154 @@ def create_github_issue(title, body):
     return resp.json()['html_url']
 
 
+def write_run_markdown(detail, activity_id, date_str, tweet):
+    """写入单个跑步记录的Markdown文件"""
+    os.makedirs('runs', exist_ok=True)
+
+    distance    = detail['distance'] / 1000
+    duration    = detail['moving_time']
+    speed_ms    = detail.get('average_speed', 0)
+    heart_rate  = detail.get('average_heartrate')
+    calories    = detail.get('calories')
+    elevation   = detail.get('total_elevation_gain', 0)
+    max_speed   = detail.get('max_speed', 0)
+
+    start_latlng = detail.get('start_latlng', [0, 0])
+    end_latlng   = detail.get('end_latlng', [0, 0])
+    polyline_data = detail.get('map', {}).get('polyline') or detail.get('map', {}).get('summary_polyline') or ''
+
+    # 获取温度（如果有的话）
+    temp = detail.get('average_temp', '')
+
+    # 获取天气描述
+    weather_desc = ''
+    if 'weather' in detail:
+        weather_desc = detail['weather'].get('summary', '')
+
+    # 构建frontmatter
+    frontmatter = f"""---
+id: {activity_id}
+date: {detail['start_date'][:10]}
+title: {detail.get('name', '跑步记录')}
+sport_type: {detail.get('sport_type', 'Run')}
+distance: {distance:.1f}
+duration: {duration}
+moving_time: {detail.get('moving_time', duration)}
+average_speed: {speed_ms}
+average_heartrate: {heart_rate if heart_rate else ''}
+calories: {calories if calories else ''}
+max_speed: {max_speed}
+elevation_gain: {elevation}
+start_latlng: [{start_latlng[0]}, {start_latlng[1]}]
+end_latlng: [{end_latlng[0]}, {end_latlng[1]}]
+polyline: "{polyline_data}"
+"""
+    if temp:
+        frontmatter += f"temperature: {temp}\n"
+    if weather_desc:
+        frontmatter += f'weather: "{weather_desc}"\n'
+    frontmatter += """---
+
+## 今日跑步数据
+
+"""
+
+    # 统计数据表格
+    frontmatter += f"""| 项目 | 数据 |
+|------|------|
+| **距离** | {distance:.1f} 公里 |
+| **时长** | {format_duration(duration)} |
+| **配速** | {pace} |
+| **平均心率** | {hr_str} |
+| **最大速度** | {max_speed:.2f} m/s |
+| **爬升** | {elevation} 米 |
+| **消耗** | {cal_str} |
+"""
+
+    if temp:
+        frontmatter += f"| **温度** | {temp}°C |\n"
+    if weather_desc:
+        frontmatter += f"| **天气** | {weather_desc} |\n"
+
+    frontmatter += """\n## 路线地图
+
+"""
+
+    if detail.get('map', {}).get('polyline') or detail.get('map', {}).get('summary_polyline'):
+        frontmatter += f"![路线地图](maps/map_{activity_id}.png)\n\n"
+
+    frontmatter += """---
+*由 GitHub Actions 自动生成*
+"""
+
+    md_filename = f"runs/{detail['start_date'][:10]}-run-{activity_id}.md"
+    with open(md_filename, 'w', encoding='utf-8') as f:
+        f.write(frontmatter)
+
+    print(f"Markdown文件已写入: {md_filename}")
+    return md_filename
+
+
+def update_activities_json(detail, activity_id, md_filename, map_url):
+    """更新聚合的JSON数据文件"""
+    os.makedirs('data', exist_ok=True)
+
+    distance    = detail['distance'] / 1000
+    duration    = detail['moving_time']
+    speed_ms    = detail.get('average_speed', 0)
+    polyline_data = detail.get('map', {}).get('polyline') or detail.get('map', {}).get('summary_polyline') or ''
+
+    # 读取现有数据
+    activities_file = 'data/activities.json'
+    if os.path.exists(activities_file):
+        with open(activities_file, 'r', encoding='utf-8') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"total_activities": 0, "total_distance": 0, "total_duration": 0, "activities": []}
+    else:
+        data = {"total_activities": 0, "total_distance": 0, "total_duration": 0, "activities": []}
+
+    # 检查是否已存在该活动
+    existing = any(a['id'] == activity_id for a in data['activities'])
+
+    if not existing:
+        activity_data = {
+            "id": activity_id,
+            "date": detail['start_date'][:10],
+            "title": detail.get('name', '跑步记录'),
+            "distance": round(distance, 1),
+            "duration": duration,
+            "moving_time": detail.get('moving_time', duration),
+            "pace": int(1000 / speed_ms * 60) if speed_ms > 0 else 0,  # 秒/公里
+            "speed_ms": round(speed_ms, 2),
+            "average_heartrate": detail.get('average_heartrate'),
+            "max_heartrate": detail.get('max_heartrate'),
+            "calories": detail.get('calories'),
+            "elevation_gain": detail.get('total_elevation_gain', 0),
+            "polyline": polyline_data,
+            "type": detail.get('sport_type', 'Run'),
+            "map_url": map_url or '',
+            "md_file": md_filename,
+            "strava_url": f"https://www.strava.com/activities/{activity_id}"
+        }
+        data['activities'].append(activity_data)
+        data['total_activities'] = len(data['activities'])
+        data['total_distance'] = round(sum(a['distance'] for a in data['activities']), 1)
+        data['total_duration'] = sum(a['duration'] for a in data['activities'])
+        # 按日期排序（最新的在前）
+        data['activities'].sort(key=lambda x: x['date'], reverse=True)
+
+        with open(activities_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+
+        print(f"JSON数据已更新: {activities_file}")
+    else:
+        print(f"活动已存在，跳过重复写入: {activity_id}")
+
+    return data
+
+
 def main():
     print("获取 Strava 令牌...")
     token = get_strava_token()
@@ -203,6 +355,10 @@ def main():
         xhs_card_url = upload_map_to_repo(card_path, f'xhs_{activity_id}')
     except Exception as e:
         print(f"小红书卡片生成失败: {e}", file=sys.stderr)
+
+    # ── 写入跑步日记数据 (Markdown + JSON) ─────────────────────────────
+    md_filename = write_run_markdown(detail, activity_id, date_str, tweet)
+    activities_data = update_activities_json(detail, activity_id, md_filename, map_url)
 
     # ── 创建 GitHub Issue ─────────────────────────────
     title = f"🏃 跑步记录 {date_str}"
