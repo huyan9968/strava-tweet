@@ -149,14 +149,39 @@ def generate_html(data):
     activities = data.get('activities', [])
     stats = compute_stats(activities)
 
+    # 计算地图中心（用实际活动坐标均值，不再硬编码北京）
+    latlngs = [a['start_latlng'] for a in activities
+               if a.get('start_latlng') and len(a['start_latlng']) == 2
+               and a['start_latlng'][0] != 0]
+    if latlngs:
+        map_center_lat = sum(l[0] for l in latlngs) / len(latlngs)
+        map_center_lng = sum(l[1] for l in latlngs) / len(latlngs)
+    else:
+        map_center_lat, map_center_lng = 39.9042, 116.4074
+
+    # 所有有路线数据的活动（供地图批量绘制）
+    route_data = []
+    for a in activities:
+        pl = a.get('polyline', '')
+        if pl:
+            pace = a.get('pace', 0)
+            if pace and pace > 0:
+                intensity = min(1, max(0, (pace - 300) / 120))
+                r = int(30 + intensity * 150)
+                g = int(150 - intensity * 100)
+                b = int(200 - intensity * 100)
+                color = f"rgb({r},{g},{b})"
+            else:
+                color = "#3b82f6"
+            route_data.append({"polyline": pl, "color": color})
+
     # 最近的跑步记录（显示全部）
     recent = activities  # 显示所有记录
 
     # Chart.js 月度数据
     monthly_chart = build_monthly_chart(activities)
+    route_data_json = json.dumps(route_data, ensure_ascii=False)
 
-    # 配速热力图数据
-    pace_lines = build_pace_distribution(activities)
 
     html = f"""<!DOCTYPE html>
 <html lang="zh-CN">
@@ -305,17 +330,25 @@ def generate_html(data):
             }}
         }});
 
-        // 地图
-        const map = L.map('map').setView([39.9042, 116.4074], 12);
+        // 地图（中心取自实际活动坐标）
+        const map = L.map('map').setView([{map_center_lat:.4f}, {map_center_lng:.4f}], 12);
         L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png', {{
             attribution: '© OpenStreetMap'
         }}).addTo(map);
 
-        // 添加配速热力线
-        const paceLines = [{pace_lines}];
-        paceLines.forEach(line => {{
-            L.polyline(line.coords, {{ color: line.color, weight: line.weight, opacity: 0.7 }}).addTo(map);
+        // 绘制所有有路线的活动，并自动缩放到合适范围
+        const routeData = {route_data_json};
+        const allCoords = [];
+        routeData.forEach(r => {{
+            const coords = polyline.decode(r.polyline);
+            if (coords.length > 0) {{
+                L.polyline(coords, {{ color: r.color, weight: 3, opacity: 0.6 }}).addTo(map);
+                coords.forEach(c => allCoords.push(c));
+            }}
         }});
+        if (allCoords.length > 0) {{
+            map.fitBounds(allCoords, {{ padding: [20, 20] }});
+        }}
 
         function showMap(id) {{
             const run = {json.dumps({a.get('id', ''): a for a in activities})};
