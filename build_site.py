@@ -12,7 +12,7 @@ from datetime import datetime
 
 # ─── 配置 ─────────────────────────────────────────
 DATA_FILE = 'data/activities.json'
-OUTPUT_FILE = 'index.html'
+OUTPUT_FILE = 'docs/index.html'
 RUNS_DIR = 'runs'
 
 # ─── 颜色主题 ─────────────────────────────────────
@@ -376,6 +376,7 @@ def main():
     print("生成静态网站...")
     html = generate_html(data)
 
+    os.makedirs('docs', exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write(html)
 
