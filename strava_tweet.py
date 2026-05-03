@@ -15,6 +15,11 @@ if not GITHUB_TOKEN and 'GITHUB_TOKEN' in os.environ:
     GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY', 'huyan9968/strava-tweet')
 
+TWITTER_API_KEY            = os.environ.get('TWITTER_API_KEY', '')
+TWITTER_API_SECRET         = os.environ.get('TWITTER_API_SECRET', '')
+TWITTER_ACCESS_TOKEN       = os.environ.get('TWITTER_ACCESS_TOKEN', '')
+TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('TWITTER_ACCESS_TOKEN_SECRET', '')
+
 
 def get_strava_token():
     resp = requests.post('https://www.strava.com/oauth/token', data={
@@ -118,6 +123,65 @@ def upload_map_to_repo(image_path, activity_id):
         owner, repo = GITHUB_REPO.split('/')
         return f"https://raw.githubusercontent.com/{owner}/{repo}/main/{filename}"
     return None
+
+
+def already_tweeted(activity_id):
+    activities_file = 'data/activities.json'
+    if not os.path.exists(activities_file):
+        return False
+    with open(activities_file, 'r', encoding='utf-8') as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return False
+    return any(a['id'] == activity_id and a.get('tweeted') for a in data.get('activities', []))
+
+
+def mark_as_tweeted(activity_id, tweet_id):
+    activities_file = 'data/activities.json'
+    if not os.path.exists(activities_file):
+        return
+    with open(activities_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    for a in data['activities']:
+        if a['id'] == activity_id:
+            a['tweeted'] = True
+            a['tweet_id'] = str(tweet_id)
+    with open(activities_file, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def post_to_twitter(text, image_path=None):
+    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET]):
+        print("未配置 Twitter API 凭据，跳过发推。")
+        return None
+    try:
+        import tweepy
+
+        media_ids = None
+        if image_path and os.path.exists(image_path):
+            auth = tweepy.OAuth1UserHandler(
+                TWITTER_API_KEY, TWITTER_API_SECRET,
+                TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET
+            )
+            api = tweepy.API(auth)
+            media = api.media_upload(filename=image_path)
+            media_ids = [media.media_id]
+            print(f"图片已上传，media_id: {media.media_id}")
+
+        client = tweepy.Client(
+            consumer_key=TWITTER_API_KEY,
+            consumer_secret=TWITTER_API_SECRET,
+            access_token=TWITTER_ACCESS_TOKEN,
+            access_token_secret=TWITTER_ACCESS_TOKEN_SECRET
+        )
+        response = client.create_tweet(text=text, media_ids=media_ids)
+        tweet_id = response.data['id']
+        print(f"推文已发布！https://x.com/i/web/status/{tweet_id}")
+        return tweet_id
+    except Exception as e:
+        print(f"发推失败: {e}", file=sys.stderr)
+        return None
 
 
 def create_github_issue(title, body):
@@ -303,6 +367,10 @@ def main():
     activity_id = activity['id']
     print(f"找到活动：{activity['name']} (ID: {activity_id})")
 
+    if already_tweeted(activity_id):
+        print(f"活动 {activity_id} 已发布过推文，退出。")
+        return
+
     detail = get_activity_detail(token, activity_id)
 
     distance    = detail['distance'] / 1000
@@ -332,6 +400,7 @@ def main():
 
     # ── 生成路线地图 ──────────────────────────────────
     map_url = None
+    map_file = None
     polyline_str = (detail.get('map') or {}).get('polyline') or (detail.get('map') or {}).get('summary_polyline')
     if polyline_str:
         print("生成路线地图...")
@@ -384,6 +453,13 @@ def main():
 
     issue_url = create_github_issue(title, body)
     print(f"Issue 已创建：{issue_url}")
+
+    # ── 发布推文 ──────────────────────────────────────
+    print("发布推文...")
+    tweet_id = post_to_twitter(tweet, map_file)
+    if tweet_id:
+        mark_as_tweeted(activity_id, tweet_id)
+        print("推文发布成功，已记录。")
 
 
 if __name__ == '__main__':

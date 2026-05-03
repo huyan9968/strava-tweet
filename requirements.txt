@@ -2,3 +2,4 @@ requests
 staticmap
 polyline
 playwright
+tweepy
