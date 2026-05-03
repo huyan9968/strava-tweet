@@ -150,6 +150,9 @@ def write_run_markdown(detail, activity_id, date_str, tweet):
     calories    = detail.get('calories')
     elevation   = detail.get('total_elevation_gain', 0)
     max_speed   = detail.get('max_speed', 0)
+    pace    = format_pace(speed_ms)
+    hr_str  = f"{int(heart_rate)} bpm" if heart_rate else "未记录"
+    cal_str = f"{int(calories)} 大卡" if calories else "未记录"
 
     start_latlng = detail.get('start_latlng', [0, 0])
     end_latlng   = detail.get('end_latlng', [0, 0])
