@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跑步日记 - 我的跑步记录</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; background: #f1f5f9; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 2rem 1rem; text-align: center; }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .stat-card .value { font-size: 2rem; font-weight: bold; color: #1e40af; }
+        .stat-card .label { color: #64748b; margin-top: 0.5rem; font-size: 0.9rem; }
+        .chart-section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .chart-section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: #1e40af; }
+        .runs-list { display: flex; flex-direction: column; gap: 1rem; }
+        .run-item { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; transition: transform 0.2s; }
+        .run-item:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .run-date { font-weight: bold; color: #1e40af; min-width: 100px; }
+        .run-stats { flex: 1; display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .run-stat { font-size: 0.9rem; color: #64748b; }
+        .run-stat strong { color: #1e293b; }
+        .run-map-btn { padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; transition: opacity 0.2s; }
+        .run-map-btn:hover { opacity: 0.9; }
+        #map { width: 100%; height: 400px; border-radius: 12px; margin-top: 1rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .badge-run { background: #10b981; color: white; }
+        @media (max-width: 640px) { .run-item { flex-direction: column; align-items: flex-start; } .run-stats { width: 100%; } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🏃 跑步日记</h1>
+        <p>记录每一次奔跑的足迹</p>
+    </header>
+
+    <div class="container">
+        <!-- 统计面板 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="value">59</div>
+                <div class="label">总跑步次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">529.0</div>
+                <div class="label">总距离 (km)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">2</div>
+                <div class="label">本月次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">16.5</div>
+                <div class="label">本月距离 (km)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">0</div>
+                <div class="label">总消耗 (卡路里)</div>
+            </div>
+            <div class="stat-card">
+                <div class="value">1959.8</div>
+                <div class="label">总爬升 (m)</div>
+            </div>
+        </div>
+
+        <!-- 月度趋势图 -->
+        <div class="chart-section">
+            <h2>📈 月度跑步统计</h2>
+            <canvas id="monthlyChart"></canvas>
+        </div>
+
+        <!-- 路线热力图 -->
+        <div class="chart-section">
+            <h2>🗺️ 跑步路线地图</h2>
+            <div id="map"></div>
+        </div>
+
+        <!-- 最近跑步记录 -->
+        <div class="chart-section">
+            <h2>📋 最近跑步记录</h2>
+            <div class="runs-list">
+
+                <div class="run-item">
+                    <span class="run-date">2026-05-02</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>午后跑步</strong></span>
+                        <span class="run-stat">📏 1.2 km</span>
+                        <span class="run-stat">⏱️ 19m 25s</span>
+                        <span class="run-stat">🏃 16'41"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18340865683')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-05-02</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 15.4 km</span>
+                        <span class="run-stat">⏱️ 1h 25m 53s</span>
+                        <span class="run-stat">🏃 5'35"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18339047103')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-30</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 29s</span>
+                        <span class="run-stat">🏃 6'02"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18312617426')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-29</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 21.1 km</span>
+                        <span class="run-stat">⏱️ 1h 58m 55s</span>
+                        <span class="run-stat">🏃 5'37"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18299598541')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-26</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Lunch Run</strong></span>
+                        <span class="run-stat">📏 5.2 km</span>
+                        <span class="run-stat">⏱️ 33m 49s</span>
+                        <span class="run-stat">🏃 6'26"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18272283701')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-25</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 15.0 km</span>
+                        <span class="run-stat">⏱️ 1h 22m 52s</span>
+                        <span class="run-stat">🏃 5'30"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18244835283')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-24</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.1 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 5s</span>
+                        <span class="run-stat">🏃 5'55"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18232908030')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-23</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 57m 54s</span>
+                        <span class="run-stat">🏃 5'46"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18218787761')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-22</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.8 km</span>
+                        <span class="run-stat">⏱️ 59m 24s</span>
+                        <span class="run-stat">🏃 5'30"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18204843342')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-21</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.7 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 9s</span>
+                        <span class="run-stat">🏃 5'37"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18190516746')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-19</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>午后跑步</strong></span>
+                        <span class="run-stat">📏 3.8 km</span>
+                        <span class="run-stat">⏱️ 24m 44s</span>
+                        <span class="run-stat">🏃 6'30"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18169257057')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-18</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 11.0 km</span>
+                        <span class="run-stat">⏱️ 1h 6m 13s</span>
+                        <span class="run-stat">🏃 6'00"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18150971407')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-13</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.6 km</span>
+                        <span class="run-stat">⏱️ 58m 54s</span>
+                        <span class="run-stat">🏃 5'33"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18085448097')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-11</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Afternoon Run</strong></span>
+                        <span class="run-stat">📏 15.2 km</span>
+                        <span class="run-stat">⏱️ 1h 39m 19s</span>
+                        <span class="run-stat">🏃 6'31"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18063457256')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-10</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 9.2 km</span>
+                        <span class="run-stat">⏱️ 1h 3m 56s</span>
+                        <span class="run-stat">🏃 6'56"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18046579180')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-07</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.5 km</span>
+                        <span class="run-stat">⏱️ 1h 7m 10s</span>
+                        <span class="run-stat">🏃 6'23"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('18033443138')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-06</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 11.0 km</span>
+                        <span class="run-stat">⏱️ 1h 4m 0s</span>
+                        <span class="run-stat">🏃 5'48"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17992551938')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-04-03</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 9.0 km</span>
+                        <span class="run-stat">⏱️ 57m 19s</span>
+                        <span class="run-stat">🏃 6'22"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17955436858')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-30</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 1h 5m 2s</span>
+                        <span class="run-stat">🏃 6'29"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17906980538')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-29</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.8 km</span>
+                        <span class="run-stat">⏱️ 55m 58s</span>
+                        <span class="run-stat">🏃 6'21"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17894050051')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-27</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.5 km</span>
+                        <span class="run-stat">⏱️ 1h 2m 33s</span>
+                        <span class="run-stat">🏃 5'56"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17871455208')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-23</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.5 km</span>
+                        <span class="run-stat">⏱️ 48m 1s</span>
+                        <span class="run-stat">🏃 5'40"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17822061652')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-22</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Nike Run Club: 星期日  上午跑</strong></span>
+                        <span class="run-stat">📏 10.4 km</span>
+                        <span class="run-stat">⏱️ 1h 1m 33s</span>
+                        <span class="run-stat">🏃 5'54"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17820450410')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-21</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 11.8 km</span>
+                        <span class="run-stat">⏱️ 1h 6m 11s</span>
+                        <span class="run-stat">🏃 5'37"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17796236089')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-20</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.6 km</span>
+                        <span class="run-stat">⏱️ 57m 55s</span>
+                        <span class="run-stat">🏃 5'26"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17785134597')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-18</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.1 km</span>
+                        <span class="run-stat">⏱️ 29m 45s</span>
+                        <span class="run-stat">🏃 5'50"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17760039682')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-17</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.5 km</span>
+                        <span class="run-stat">⏱️ 30m 10s</span>
+                        <span class="run-stat">🏃 5'30"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17747528752')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-16</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.2 km</span>
+                        <span class="run-stat">⏱️ 35m 37s</span>
+                        <span class="run-stat">🏃 6'50"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17736945937')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-15</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.2 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 26s</span>
+                        <span class="run-stat">🏃 5'56"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17724574852')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-14</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.4 km</span>
+                        <span class="run-stat">⏱️ 37m 1s</span>
+                        <span class="run-stat">🏃 6'51"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17712849722')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-13</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 33m 27s</span>
+                        <span class="run-stat">🏃 6'39"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17701933122')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-12</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 9.1 km</span>
+                        <span class="run-stat">⏱️ 50m 57s</span>
+                        <span class="run-stat">🏃 5'36"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17690511284')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-11</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.2 km</span>
+                        <span class="run-stat">⏱️ 30m 4s</span>
+                        <span class="run-stat">🏃 5'48"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17678246273')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-10</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 32m 21s</span>
+                        <span class="run-stat">🏃 6'27"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17665501074')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-09</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.2 km</span>
+                        <span class="run-stat">⏱️ 33m 44s</span>
+                        <span class="run-stat">🏃 6'28"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17654393477')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-07</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 1h 7m 40s</span>
+                        <span class="run-stat">🏃 6'45"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17629420247')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-06</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.3 km</span>
+                        <span class="run-stat">⏱️ 52m 32s</span>
+                        <span class="run-stat">🏃 6'19"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17618400208')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-05</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 34m 46s</span>
+                        <span class="run-stat">🏃 6'57"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17607364566')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-03</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 3.0 km</span>
+                        <span class="run-stat">⏱️ 17m 53s</span>
+                        <span class="run-stat">🏃 5'57"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17581288622')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-03-01</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 32m 59s</span>
+                        <span class="run-stat">🏃 6'34"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17557976348')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-28</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.0 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 18s</span>
+                        <span class="run-stat">🏃 7'32"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17546101323')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-26</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.0 km</span>
+                        <span class="run-stat">⏱️ 1h 1m 54s</span>
+                        <span class="run-stat">🏃 7'44"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17523624357')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-22</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 43.3 km</span>
+                        <span class="run-stat">⏱️ 4h 29m 1s</span>
+                        <span class="run-stat">🏃 6'12"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17479461700')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-18</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 29m 46s</span>
+                        <span class="run-stat">🏃 5'57"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17433124504')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-13</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Afternoon Run</strong></span>
+                        <span class="run-stat">📏 2.7 km</span>
+                        <span class="run-stat">⏱️ 18m 2s</span>
+                        <span class="run-stat">🏃 6'44"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17433124494')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-13</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Afternoon Run</strong></span>
+                        <span class="run-stat">📏 7.6 km</span>
+                        <span class="run-stat">⏱️ 44m 46s</span>
+                        <span class="run-stat">🏃 5'51"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17433124527')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-01</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 2.5 km</span>
+                        <span class="run-stat">⏱️ 22m 16s</span>
+                        <span class="run-stat">🏃 8'49"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17433124507')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-02-01</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.1 km</span>
+                        <span class="run-stat">⏱️ 1h 9m 49s</span>
+                        <span class="run-stat">🏃 6'54"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17433124819')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-25</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 1h 8m 8s</span>
+                        <span class="run-stat">🏃 6'48"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17166942120')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-23</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.0 km</span>
+                        <span class="run-stat">⏱️ 1h 21m 34s</span>
+                        <span class="run-stat">🏃 8'08"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17144783517')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-22</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 12.1 km</span>
+                        <span class="run-stat">⏱️ 1h 24m 48s</span>
+                        <span class="run-stat">🏃 6'59"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17133914132')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-19</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 8.7 km</span>
+                        <span class="run-stat">⏱️ 1h 0m 9s</span>
+                        <span class="run-stat">🏃 6'55"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17098447967')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-18</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.7 km</span>
+                        <span class="run-stat">⏱️ 1h 19m 17s</span>
+                        <span class="run-stat">🏃 7'26"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17086998746')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-17</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 11.0 km</span>
+                        <span class="run-stat">⏱️ 1h 16m 6s</span>
+                        <span class="run-stat">🏃 6'54"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17075535483')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-12</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 4.5 km</span>
+                        <span class="run-stat">⏱️ 40m 8s</span>
+                        <span class="run-stat">🏃 9'01"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17075534168')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-11</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 3.6 km</span>
+                        <span class="run-stat">⏱️ 24m 45s</span>
+                        <span class="run-stat">🏃 6'54"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17007046721')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-11</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 10.5 km</span>
+                        <span class="run-stat">⏱️ 1h 2m 47s</span>
+                        <span class="run-stat">🏃 5'58"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('17007046740')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-07</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Afternoon Run</strong></span>
+                        <span class="run-stat">📏 3.0 km</span>
+                        <span class="run-stat">⏱️ 20m 5s</span>
+                        <span class="run-stat">🏃 6'34"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('16965556941')">查看地图</button>
+                </div>
+
+                <div class="run-item">
+                    <span class="run-date">2026-01-05</span>
+                    <span class="badge badge-run">跑步</span>
+                    <div class="run-stats">
+                        <span class="run-stat"><strong>Morning Run</strong></span>
+                        <span class="run-stat">📏 5.0 km</span>
+                        <span class="run-stat">⏱️ 32m 39s</span>
+                        <span class="run-stat">🏃 6'30"/km</span>
+                        <span class="run-stat">❤️ --</span>
+                        <span class="run-stat">🔥 --</span>
+                    </div>
+                    <button class="run-map-btn" onclick="showMap('16939834052')">查看地图</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 月度统计图
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+    labels: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05'],
+    datasets: [{
+        label: '跑步次数',
+        data: [11, 8, 22, 16, 2],
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        tension: 0.4
+    }, {
+        label: '距离(km)',
+        data: [89.1, 87.2, 162.7, 173.4, 16.5],
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0.4,
+        yAxisID: 'y1'
+    }]},
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: '次数' } },
+                    y1: { type: 'linear', display: true, position: 'right',
+                        title: { display: true, text: '距离(km)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+
+        // 地图
+        const map = L.map('map').setView([39.9042, 116.4074], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 添加配速热力线
+        const paceLines = [];
+        paceLines.forEach(line => {
+            L.polyline(line.coords, { color: line.color, weight: line.weight, opacity: 0.7 }).addTo(map);
+        });
+
+        function showMap(id) {
+            const run = {"18340865683": {"date": "2026-05-02", "title": "\u5348\u540e\u8dd1\u6b65", "distance": 1.16, "duration": 1165, "calories": 0, "elevation_gain": 0, "avg_hr": 0, "max_hr": 0, "avg_pace": 0.016693892757859746, "speed_ms": 0.9983690987124463, "id": 18340865683, "sport_type": "Run"}, "18339047103": {"date": "2026-05-02", "title": "Morning Run", "distance": 15.38, "duration": 5153, "calories": 0, "elevation_gain": 70.0, "avg_hr": 143.2, "max_hr": 165.0, "avg_pace": 0.005585544571626778, "speed_ms": 2.983892877935183, "id": 18339047103, "sport_type": "Run"}, "18312617426": {"date": "2026-04-30", "title": "Morning Run", "distance": 10.02, "duration": 3629, "calories": 0, "elevation_gain": 27.0, "avg_hr": 144.9, "max_hr": 162.0, "avg_pace": 0.006038068616684969, "speed_ms": 2.7602645356847617, "id": 18312617426, "sport_type": "Run"}, "18299598541": {"date": "2026-04-29", "title": "Morning Run", "distance": 21.13, "duration": 7135, "calories": 0, "elevation_gain": 53.0, "avg_hr": 150.8, "max_hr": 166.0, "avg_pace": 0.005628924863517308, "speed_ms": 2.960896986685354, "id": 18299598541, "sport_type": "Run"}, "18272283701": {"date": "2026-04-26", "title": "Lunch Run", "distance": 5.25, "duration": 2029, "calories": 0, "elevation_gain": 20.0, "avg_hr": 124.3, "max_hr": 133.0, "avg_pace": 0.006440043166381007, "speed_ms": 2.5879743716116312, "id": 18272283701, "sport_type": "Run"}, "18244835283": {"date": "2026-04-25", "title": "Morning Run", "distance": 15.02, "duration": 4972, "calories": 0, "elevation_gain": 48.0, "avg_hr": 143.1, "max_hr": 166.0, "avg_pace": 0.005516353792215861, "speed_ms": 3.0213193885760257, "id": 18244835283, "sport_type": "Run"}, "18232908030": {"date": "2026-04-24", "title": "Morning Run", "distance": 10.13, "duration": 3605, "calories": 0, "elevation_gain": 34.0, "avg_hr": 136.2, "max_hr": 157.0, "avg_pace": 0.00592929582005204, "speed_ms": 2.810901525658807, "id": 18232908030, "sport_type": "Run"}, "18218787761": {"date": "2026-04-23", "title": "Morning Run", "distance": 10.01, "duration": 3474, "calories": 0, "elevation_gain": 37.0, "avg_hr": 145.0, "max_hr": 168.0, "avg_pace": 0.005781905332534452, "speed_ms": 2.8825561312607944, "id": 18218787761, "sport_type": "Run"}, "18204843342": {"date": "2026-04-22", "title": "Morning Run", "distance": 10.77, "duration": 3564, "calories": 0, "elevation_gain": 53.0, "avg_hr": 141.4, "max_hr": 172.0, "avg_pace": 0.005514808281496611, "speed_ms": 3.022166105499439, "id": 18204843342, "sport_type": "Run"}, "18190516746": {"date": "2026-04-21", "title": "Morning Run", "distance": 10.71, "duration": 3609, "calories": 0, "elevation_gain": 36.0, "avg_hr": 147.6, "max_hr": 166.0, "avg_pace": 0.005617347939371866, "speed_ms": 2.9669991687448047, "id": 18190516746, "sport_type": "Run"}, "18169257057": {"date": "2026-04-19", "title": "\u5348\u540e\u8dd1\u6b65", "distance": 3.8, "duration": 1484, "calories": 0, "elevation_gain": 28.8, "avg_hr": 128.7, "max_hr": 141.0, "avg_pace": 0.0065031244796185765, "speed_ms": 2.5628706199460916, "id": 18169257057, "sport_type": "Run"}, "18150971407": {"date": "2026-04-18", "title": "Morning Run", "distance": 11.01, "duration": 3973, "calories": 0, "elevation_gain": 65.0, "avg_hr": 138.3, "max_hr": 162.0, "avg_pace": 0.006011990690720682, "speed_ms": 2.7722376038258245, "id": 18150971407, "sport_type": "Run"}, "18085448097": {"date": "2026-04-13", "title": "Morning Run", "distance": 10.61, "duration": 3534, "calories": 0, "elevation_gain": 48.0, "avg_hr": 151.8, "max_hr": 168.0, "avg_pace": 0.005553198510347428, "speed_ms": 3.0012733446519526, "id": 18085448097, "sport_type": "Run"}, "18063457256": {"date": "2026-04-11", "title": "Afternoon Run", "distance": 15.23, "duration": 5959, "calories": 0, "elevation_gain": 55.0, "avg_hr": 132.6, "max_hr": 160.0, "avg_pace": 0.006520264355742297, "speed_ms": 2.5561335794596407, "id": 18063457256, "sport_type": "Run"}, "18046579180": {"date": "2026-04-10", "title": "Morning Run", "distance": 9.21, "duration": 3836, "calories": 0, "elevation_gain": 60.0, "avg_hr": 125.0, "max_hr": 140.0, "avg_pace": 0.006942483802077678, "speed_ms": 2.400677789363921, "id": 18046579180, "sport_type": "Run"}, "18033443138": {"date": "2026-04-07", "title": "Morning Run", "distance": 10.51, "duration": 4030, "calories": 0, "elevation_gain": 35.0, "avg_hr": 130.5, "max_hr": 162.0, "avg_pace": 0.006391347099311702, "speed_ms": 2.6076923076923078, "id": 18033443138, "sport_type": "Run"}, "17992551938": {"date": "2026-04-06", "title": "Morning Run", "distance": 11.0, "duration": 3840, "calories": 0, "elevation_gain": 37.0, "avg_hr": 139.0, "max_hr": 160.0, "avg_pace": 0.005816331167355842, "speed_ms": 2.865494791666667, "id": 17992551938, "sport_type": "Run"}, "17955436858": {"date": "2026-04-03", "title": "Morning Run", "distance": 9.0, "duration": 3439, "calories": 0, "elevation_gain": 33.0, "avg_hr": 128.1, "max_hr": 157.0, "avg_pace": 0.00636710360660594, "speed_ms": 2.617621401570224, "id": 17955436858, "sport_type": "Run"}, "17906980538": {"date": "2026-03-30", "title": "Morning Run", "distance": 10.01, "duration": 3902, "calories": 0, "elevation_gain": 32.0, "avg_hr": 125.0, "max_hr": 150.0, "avg_pace": 0.006499433673129456, "speed_ms": 2.564325986673501, "id": 17906980538, "sport_type": "Run"}, "17894050051": {"date": "2026-03-29", "title": "Morning Run", "distance": 8.8, "duration": 3358, "calories": 0, "elevation_gain": 20.0, "avg_hr": 134.6, "max_hr": 157.0, "avg_pace": 0.006359848484848485, "speed_ms": 2.620607504466945, "id": 17894050051, "sport_type": "Run"}, "17871455208": {"date": "2026-03-27", "title": "Morning Run", "distance": 10.52, "duration": 3753, "calories": 0, "elevation_gain": 29.0, "avg_hr": 140.8, "max_hr": 174.0, "avg_pace": 0.005948079117535185, "speed_ms": 2.802025046629363, "id": 17871455208, "sport_type": "Run"}, "17822061652": {"date": "2026-03-23", "title": "Morning Run", "distance": 8.46, "duration": 2881, "calories": 0, "elevation_gain": 29.0, "avg_hr": 144.2, "max_hr": 168.0, "avg_pace": 0.005674387457653825, "speed_ms": 2.9371745921555017, "id": 17822061652, "sport_type": "Run"}, "17820450410": {"date": "2026-03-22", "title": "Nike Run Club: \u661f\u671f\u65e5  \u4e0a\u5348\u8dd1", "distance": 10.41, "duration": 3693, "calories": 0, "elevation_gain": 44.0, "avg_hr": 141.6, "max_hr": 156.0, "avg_pace": 0.00591337932094614, "speed_ms": 2.818467370701327, "id": 17820450410, "sport_type": "Run"}, "17796236089": {"date": "2026-03-21", "title": "Morning Run", "distance": 11.75, "duration": 3971, "calories": 0, "elevation_gain": 60.0, "avg_hr": 150.6, "max_hr": 169.0, "avg_pace": 0.005630515665055922, "speed_ms": 2.9600604381767814, "id": 17796236089, "sport_type": "Run"}, "17785134597": {"date": "2026-03-20", "title": "Morning Run", "distance": 10.63, "duration": 3475, "calories": 0, "elevation_gain": 63.0, "avg_hr": 155.2, "max_hr": 175.0, "avg_pace": 0.005449954518365171, "speed_ms": 3.0581294964028776, "id": 17785134597, "sport_type": "Run"}, "17760039682": {"date": "2026-03-18", "title": "Morning Run", "distance": 5.1, "duration": 1785, "calories": 0, "elevation_gain": 33.0, "avg_hr": 147.9, "max_hr": 168.0, "avg_pace": 0.00583562181247548, "speed_ms": 2.8560224089635855, "id": 17760039682, "sport_type": "Run"}, "17747528752": {"date": "2026-03-17", "title": "Morning Run", "distance": 5.48, "duration": 1810, "calories": 0, "elevation_gain": 9.0, "avg_hr": 160.0, "max_hr": 170.0, "avg_pace": 0.0055068759888037, "speed_ms": 3.0265193370165746, "id": 17747528752, "sport_type": "Run"}, "17736945937": {"date": "2026-03-16", "title": "Morning Run", "distance": 5.2, "duration": 2137, "calories": 0, "elevation_gain": 24.0, "avg_hr": 133.1, "max_hr": 144.0, "avg_pace": 0.006845146576465765, "speed_ms": 2.4348151614412727, "id": 17736945937, "sport_type": "Run"}, "17724574852": {"date": "2026-03-15", "title": "Morning Run", "distance": 10.17, "duration": 3626, "calories": 0, "elevation_gain": 63.0, "avg_hr": 143.2, "max_hr": 171.0, "avg_pace": 0.00594406740762598, "speed_ms": 2.803916161059018, "id": 17724574852, "sport_type": "Run"}, "17712849722": {"date": "2026-03-14", "title": "Morning Run", "distance": 5.39, "duration": 2221, "calories": 0, "elevation_gain": 5.0, "avg_hr": 137.1, "max_hr": 170.0, "avg_pace": 0.006862563341984921, "speed_ms": 2.4286357496623143, "id": 17712849722, "sport_type": "Run"}, "17701933122": {"date": "2026-03-13", "title": "Morning Run", "distance": 5.02, "duration": 2007, "calories": 0, "elevation_gain": 41.0, "avg_hr": 140.1, "max_hr": 174.0, "avg_pace": 0.006662284894837476, "speed_ms": 2.501644245142003, "id": 17701933122, "sport_type": "Run"}, "17690511284": {"date": "2026-03-12", "title": "Morning Run", "distance": 9.07, "duration": 3057, "calories": 0, "elevation_gain": 29.0, "avg_hr": 152.4, "max_hr": 166.0, "avg_pace": 0.005615562658437121, "speed_ms": 2.967942427216225, "id": 17690511284, "sport_type": "Run"}, "17678246273": {"date": "2026-03-11", "title": "Morning Run", "distance": 5.17, "duration": 1804, "calories": 0, "elevation_gain": 15.0, "avg_hr": 150.4, "max_hr": 169.0, "avg_pace": 0.00581447817959131, "speed_ms": 2.8664079822616406, "id": 17678246273, "sport_type": "Run"}, "17665501074": {"date": "2026-03-10", "title": "Morning Run", "distance": 5.01, "duration": 1941, "calories": 0, "elevation_gain": 6.0, "avg_hr": 146.1, "max_hr": 175.0, "avg_pace": 0.006453736583808801, "speed_ms": 2.582483256053581, "id": 17665501074, "sport_type": "Run"}, "17654393477": {"date": "2026-03-09", "title": "Morning Run", "distance": 5.21, "duration": 2024, "calories": 0, "elevation_gain": 26.0, "avg_hr": 142.9, "max_hr": 157.0, "avg_pace": 0.006474728087012156, "speed_ms": 2.574110671936759, "id": 17654393477, "sport_type": "Run"}, "17629420247": {"date": "2026-03-07", "title": "Morning Run", "distance": 10.01, "duration": 4060, "calories": 0, "elevation_gain": 45.0, "avg_hr": 139.8, "max_hr": 162.0, "avg_pace": 0.0067585563989878816, "speed_ms": 2.466009852216749, "id": 17629420247, "sport_type": "Run"}, "17618400208": {"date": "2026-03-06", "title": "Morning Run", "distance": 8.31, "duration": 3152, "calories": 0, "elevation_gain": 12.0, "avg_hr": 146.6, "max_hr": 163.0, "avg_pace": 0.0063179753614996375, "speed_ms": 2.637975888324873, "id": 17618400208, "sport_type": "Run"}, "17607364566": {"date": "2026-03-05", "title": "Morning Run", "distance": 5.0, "duration": 2086, "calories": 0, "elevation_gain": 22.0, "avg_hr": 142.5, "max_hr": 153.0, "avg_pace": 0.006952220977976857, "speed_ms": 2.3973154362416107, "id": 17607364566, "sport_type": "Run"}, "17581288622": {"date": "2026-03-03", "title": "Morning Run", "distance": 3.0, "duration": 1073, "calories": 0, "elevation_gain": 3.0, "avg_hr": 158.2, "max_hr": 168.0, "avg_pace": 0.00595793354655295, "speed_ms": 2.797390493942218, "id": 17581288622, "sport_type": "Run"}, "17557976348": {"date": "2026-03-01", "title": "Morning Run", "distance": 5.02, "duration": 1979, "calories": 0, "elevation_gain": 5.0, "avg_hr": 136.4, "max_hr": 152.0, "avg_pace": 0.006574838203829951, "speed_ms": 2.534916624557858, "id": 17557976348, "sport_type": "Run"}, "17546101323": {"date": "2026-02-28", "title": "Morning Run", "distance": 8.0, "duration": 3618, "calories": 0, "elevation_gain": 16.0, "avg_hr": 126.6, "max_hr": 152.0, "avg_pace": 0.007535521925494558, "speed_ms": 2.211746821448314, "id": 17546101323, "sport_type": "Run"}, "17523624357": {"date": "2026-02-26", "title": "Morning Run", "distance": 8.0, "duration": 3714, "calories": 0, "elevation_gain": 14.0, "avg_hr": 127.0, "max_hr": 159.0, "avg_pace": 0.007738177090495418, "speed_ms": 2.153823371028541, "id": 17523624357, "sport_type": "Run"}, "17479461700": {"date": "2026-02-22", "title": "Morning Run", "distance": 43.33, "duration": 16141, "calories": 0, "elevation_gain": 115.0, "avg_hr": 162.6, "max_hr": 187.0, "avg_pace": 0.006208267946706052, "speed_ms": 2.684592032711728, "id": 17479461700, "sport_type": "Run"}, "17433124504": {"date": "2026-02-18", "title": "Morning Run", "distance": 5.0, "duration": 1786, "calories": 0, "elevation_gain": 8.0, "avg_hr": 142.0, "max_hr": 162.0, "avg_pace": 0.005953333333333334, "speed_ms": 2.799552071668533, "id": 17433124504, "sport_type": "Run"}, "17433124494": {"date": "2026-02-13", "title": "Afternoon Run", "distance": 2.67, "duration": 1082, "calories": 0, "elevation_gain": 3.0, "avg_hr": 143.3, "max_hr": 159.0, "avg_pace": 0.006746477116847487, "speed_ms": 2.4704251386321627, "id": 17433124494, "sport_type": "Run"}, "17433124527": {"date": "2026-02-13", "title": "Afternoon Run", "distance": 7.63, "duration": 2686, "calories": 0, "elevation_gain": 36.0, "avg_hr": 151.0, "max_hr": 168.0, "avg_pace": 0.005864884929472903, "speed_ms": 2.8417721518987342, "id": 17433124527, "sport_type": "Run"}, "17433124507": {"date": "2026-02-01", "title": "Morning Run", "distance": 2.52, "duration": 1336, "calories": 0, "elevation_gain": 12.0, "avg_hr": 120.5, "max_hr": 141.0, "avg_pace": 0.00882547232131061, "speed_ms": 1.8884730538922156, "id": 17433124507, "sport_type": "Run"}, "17433124819": {"date": "2026-02-01", "title": "Morning Run", "distance": 10.1, "duration": 4189, "calories": 0, "elevation_gain": 65.0, "avg_hr": 142.4, "max_hr": 171.0, "avg_pace": 0.0069098046978094485, "speed_ms": 2.4120315111005013, "id": 17433124819, "sport_type": "Run"}, "17166942120": {"date": "2026-01-25", "title": "Morning Run", "distance": 10.01, "duration": 4088, "calories": 0, "elevation_gain": 51.0, "avg_hr": 154.3, "max_hr": 180.0, "avg_pace": 0.006806050858914295, "speed_ms": 2.448801369863014, "id": 17166942120, "sport_type": "Run"}, "17144783517": {"date": "2026-01-23", "title": "Morning Run", "distance": 10.01, "duration": 4894, "calories": 0, "elevation_gain": 46.0, "avg_hr": 124.4, "max_hr": 157.0, "avg_pace": 0.008146239480132099, "speed_ms": 2.0459337964854925, "id": 17144783517, "sport_type": "Run"}, "17133914132": {"date": "2026-01-22", "title": "Morning Run", "distance": 12.13, "duration": 5088, "calories": 0, "elevation_gain": 55.0, "avg_hr": 133.9, "max_hr": 156.0, "avg_pace": 0.006988511809596017, "speed_ms": 2.384866352201258, "id": 17133914132, "sport_type": "Run"}, "17098447967": {"date": "2026-01-19", "title": "Morning Run", "distance": 8.68, "duration": 3609, "calories": 0, "elevation_gain": 22.0, "avg_hr": 131.7, "max_hr": 156.0, "avg_pace": 0.0069265315522800555, "speed_ms": 2.4062067054585756, "id": 17098447967, "sport_type": "Run"}, "17086998746": {"date": "2026-01-18", "title": "Morning Run", "distance": 10.66, "duration": 4757, "calories": 0, "elevation_gain": 40.0, "avg_hr": 127.4, "max_hr": 150.0, "avg_pace": 0.007437460913070669, "speed_ms": 2.2409081353794407, "id": 17086998746, "sport_type": "Run"}, "17075535483": {"date": "2026-01-17", "title": "Morning Run", "distance": 11.01, "duration": 4566, "calories": 0, "elevation_gain": 35.0, "avg_hr": 141.0, "max_hr": 161.0, "avg_pace": 0.006915038618809632, "speed_ms": 2.4102058694699955, "id": 17075535483, "sport_type": "Run"}, "17075534168": {"date": "2026-01-12", "title": "Morning Run", "distance": 4.45, "duration": 2408, "calories": 0, "elevation_gain": 10.0, "avg_hr": 115.8, "max_hr": 149.0, "avg_pace": 0.009028668271429962, "speed_ms": 1.8459717607973423, "id": 17075534168, "sport_type": "Run"}, "17007046721": {"date": "2026-01-11", "title": "Morning Run", "distance": 3.58, "duration": 1485, "calories": 0, "elevation_gain": 7.0, "avg_hr": 141.4, "max_hr": 158.0, "avg_pace": 0.006908969098065488, "speed_ms": 2.4123232323232324, "id": 17007046721, "sport_type": "Run"}, "17007046740": {"date": "2026-01-11", "title": "Morning Run", "distance": 10.5, "duration": 3767, "calories": 0, "elevation_gain": 58.0, "avg_hr": 149.4, "max_hr": 164.0, "avg_pace": 0.005981928763120703, "speed_ms": 2.7861693655428725, "id": 17007046740, "sport_type": "Run"}, "16965556941": {"date": "2026-01-07", "title": "Afternoon Run", "distance": 3.05, "duration": 1205, "calories": 0, "elevation_gain": 4.0, "avg_hr": 136.4, "max_hr": 157.0, "avg_pace": 0.006576075092774503, "speed_ms": 2.534439834024896, "id": 16965556941, "sport_type": "Run"}, "16939834052": {"date": "2026-01-05", "title": "Morning Run", "distance": 5.02, "duration": 1959, "calories": 0, "elevation_gain": 8.0, "avg_hr": 140.8, "max_hr": 163.0, "avg_pace": 0.00650346585929408, "speed_ms": 2.562736089841756, "id": 16939834052, "sport_type": "Run"}};
+            const r = run[id] || {};
+            if (r.polyline) {
+                const coords = polyline.decode(r.polyline);
+                map.fitBounds([coords]);
+                L.polyline(coords, {color: '#10b981', weight: 6}).addTo(map);
+                const popup = L.popup()
+                    .setLatLng(coords[Math.floor(coords.length/2)])
+                    .setContent(`<b>${r.title || '跑步记录'}</b><br/>距离: ${r.distance} km<br/>配速: ${Math.round(1000/r.speed_ms)}分/公里`)
+                    .openOn(map);
+            }
+        }
+
+        // polyline解码库
+        var polyline = {};
+        polyline.decode = function(str) {
+            if (!str) return [];
+            let index = 0, lat = 0, lng = 0, coordinates = [];
+            let shift, result, byte;
+            while (index < str.length) {
+                byte = null; shift = 0; result = 0;
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+                lat += ((result & 1) ? ~(result >> 1) : (result >> 1));
+                shift = 0; result = 0;
+                do {
+                    byte = str.charCodeAt(index++) - 63;
+                    result |= (byte & 0x1f) << shift;
+                    shift += 5;
+                } while (byte >= 0x20);
+                lng += ((result & 1) ? ~(result >> 1) : (result >> 1));
+                coordinates.push([lat * 1e-5, lng * 1e-5]);
+            }
+            return coordinates;
+        };
+    </script>
+</body>
+</html>
