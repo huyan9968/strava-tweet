@@ -169,7 +169,7 @@ def write_run_markdown(detail, activity_id, date_str, tweet):
     # 构建frontmatter
     frontmatter = f"""---
 id: {activity_id}
-date: {detail['start_date'][:10]}
+date: {(detail.get('start_date_local') or detail['start_date'])[:10]}
 title: {detail.get('name', '跑步记录')}
 sport_type: {detail.get('sport_type', 'Run')}
 distance: {distance:.1f}
@@ -222,7 +222,7 @@ polyline: "{polyline_data}"
 *由 GitHub Actions 自动生成*
 """
 
-    md_filename = f"runs/{detail['start_date'][:10]}-run-{activity_id}.md"
+    md_filename = f"runs/{(detail.get('start_date_local') or detail['start_date'])[:10]}-run-{activity_id}.md"
     with open(md_filename, 'w', encoding='utf-8') as f:
         f.write(frontmatter)
 
@@ -256,7 +256,7 @@ def update_activities_json(detail, activity_id, md_filename, map_url):
     if not existing:
         activity_data = {
             "id": activity_id,
-            "date": detail['start_date'][:10],
+            "date": (detail.get('start_date_local') or detail['start_date'])[:10],
             "title": detail.get('name', '跑步记录'),
             "distance": round(distance, 1),
             "duration": duration,
