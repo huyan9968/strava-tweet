@@ -1,9 +1,28 @@
 {
-  "total_activities": 60,
-  "total_distance": 539.5,
-  "total_duration": 204584,
+  "total_activities": 61,
+  "total_distance": 540.3,
+  "total_duration": 205110,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18354214426,
+      "date": "2026-05-03",
+      "title": "午后跑步",
+      "distance": 0.8,
+      "duration": 526,
+      "moving_time": 526,
+      "pace": 40000,
+      "speed_ms": 1.5,
+      "average_heartrate": null,
+      "max_heartrate": null,
+      "calories": 64.0,
+      "elevation_gain": 0.0,
+      "polyline": "{wmyEyagtYC^JJCB@C?ZEPB^IdB@RCR@LGlBBJE^IZBTCP@r@CRCBC`@ELDD?F?ZE`@HHy@JEAAEFIPIDB?@D?@CBBD@AG@DCCFFAEAD?ZIf@e@zA_AtBF@Yd@O`@ELo@xAOJS@ICO?a@MM`@EB?CEAQ@EF^?@A",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18354214426.png",
+      "md_file": "runs/2026-05-03-run-18354214426.md",
+      "strava_url": "https://www.strava.com/activities/18354214426"
+    },
     {
       "date": "2026-05-02",
       "title": "午后跑步",
