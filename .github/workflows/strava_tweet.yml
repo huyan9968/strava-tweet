@@ -46,5 +46,6 @@ jobs:
             echo "没有新数据需要提交"
           else
             git commit -m "data: 更新跑步数据 $(date -u '+%Y-%m-%d %H:%M:%S')"
+            git pull --rebase origin main
             git push
           fi
