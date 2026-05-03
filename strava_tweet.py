@@ -310,7 +310,9 @@ def main():
     speed_ms    = detail.get('average_speed', 0)
     heart_rate  = detail.get('average_heartrate')
     calories    = detail.get('calories')
-    date_str    = datetime.now().strftime('%Y-%m-%d')
+    start_local = detail.get('start_date_local') or detail['start_date']
+    date_str    = start_local[:10]
+    start_hour  = int(start_local[11:13])
 
     hr_str  = f"{int(heart_rate)} bpm" if heart_rate else "未记录"
     cal_str = f"{int(calories)} 大卡" if calories else "未记录"
@@ -351,6 +353,7 @@ def main():
             heart_rate   = heart_rate,
             calories     = calories,
             date_str     = date_str,
+            start_hour   = start_hour,
             output_path  = f'/tmp/xhs_{activity_id}.png',
         )
         xhs_caption = get_xhs_text_caption(distance, duration, speed_ms, heart_rate, calories)

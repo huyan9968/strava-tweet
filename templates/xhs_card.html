@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;700;900&family=Inter:wght@900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1350px;
+  overflow: hidden;
+  font-family: 'ZCOOL QingKe HuangYou', 'Noto Sans SC', sans-serif;
+}
+
+.bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(175deg,
+    #0a0e27 0%,
+    #111433 25%,
+    #1a1f4a 55%,
+    #0e2240 80%,
+    #071428 100%);
+}
+
+.stars { position: absolute; inset: 0; }
+
+.glow-1 {
+  position: absolute;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+  top: -100px; right: -100px;
+}
+.glow-2 {
+  position: absolute;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+  top: 300px; left: -80px;
+}
+
+.moon {
+  position: absolute;
+  top: 70px; right: 120px;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fffde7, #fff9c4);
+  box-shadow: 0 0 40px rgba(255,249,196,0.4), 0 0 80px rgba(255,249,196,0.15);
+}
+.moon-crater1 { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.06); top: 22px; left: 28px; }
+.moon-crater2 { position: absolute; width: 11px; height: 11px; border-radius: 50%; background: rgba(0,0,0,0.05); top: 52px; left: 58px; }
+
+.skyline {
+  position: absolute;
+  bottom: 330px; left: 0; right: 0;
+  height: 160px;
+}
+
+.ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 336px;
+  background: linear-gradient(180deg, #0d1b12 0%, #0a1510 100%);
+}
+.ground::before {
+  content: '';
+  position: absolute;
+  top: -20px; left: -20px; right: -20px;
+  height: 44px;
+  background: #162a1c;
+  border-radius: 50%;
+}
+
+.track {
+  position: absolute;
+  bottom: 328px; left: 0; right: 0;
+  height: 6px;
+  background: rgba(99,230,190,0.35);
+}
+.track-dashes {
+  position: absolute;
+  bottom: 346px; left: 0; right: 0;
+  height: 5px;
+  background: repeating-linear-gradient(90deg,
+    rgba(99,230,190,0.5) 0, rgba(99,230,190,0.5) 55px,
+    transparent 55px, transparent 100px);
+}
+
+.card {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 336px;
+  background: linear-gradient(180deg, #111827 0%, #0d1117 100%);
+  border-radius: 52px 52px 0 0;
+  border-top: 1.5px solid rgba(99,230,190,0.2);
+  box-shadow: 0 -2px 40px rgba(0,0,0,0.5);
+  padding: 42px 68px 40px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.stat {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.stat:last-child { border-right: none; }
+.stat-val {
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size: 44px; font-weight: 900;
+  color: #f0fdf4; line-height: 1;
+  letter-spacing: -1.5px;
+}
+.stat-lbl {
+  font-size: 21px; color: #4b6358;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.divider { height: 1px; background: rgba(255,255,255,0.06); }
+.bottom-row {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.tags { font-size: 21px; color: #2d4a3e; font-family: 'Noto Sans SC', sans-serif; letter-spacing: 1px; }
+.via { font-size: 20px; color: #2d4a3e; font-family: 'Noto Sans SC', sans-serif; }
+
+.top-bar {
+  position: absolute;
+  top: 62px; left: 72px; right: 72px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  z-index: 20;
+}
+.date-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 24px;
+  padding: 8px 22px;
+  font-size: 22px; color: rgba(255,255,255,0.7);
+  font-family: 'Noto Sans SC', sans-serif;
+  letter-spacing: 1px;
+}
+.date-main {
+  font-size: 36px; font-weight: 700;
+  color: #fff; margin-top: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+.done-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 32px;
+  padding: 12px 28px;
+  font-size: 26px; font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.dist-block {
+  position: absolute;
+  top: 205px; left: 72px;
+  z-index: 20;
+}
+.dist-eyebrow {
+  font-size: 22px; letter-spacing: 5px;
+  color: rgba(255,255,255,0.35);
+  font-family: 'Noto Sans SC', sans-serif;
+  margin-bottom: 4px;
+}
+.dist-main { display: flex; align-items: flex-end; gap: 12px; }
+.dist-num {
+  font-family: 'Inter', sans-serif;
+  font-size: 210px; font-weight: 900;
+  color: #fff; line-height: 0.82;
+  letter-spacing: -10px;
+  text-shadow: 0 0 60px rgba(99,230,190,0.3);
+}
+.dist-km {
+  font-family: 'Inter', sans-serif;
+  font-size: 58px; font-weight: 900;
+  color: #34d399;
+  margin-bottom: 18px; letter-spacing: 2px;
+}
+
+.caption {
+  position: absolute;
+  bottom: 378px; left: 72px;
+  z-index: 20;
+  max-width: 560px;
+}
+.caption-inner {
+  font-family: 'ZCOOL QingKe HuangYou', sans-serif;
+  font-size: 60px;
+  color: #fbbf24;
+  text-shadow: 0 0 30px rgba(251,191,36,0.4);
+  line-height: 1.25;
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<svg class="stars" width="1080" height="1350">
+  <circle cx="80"  cy="90"  r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="200" cy="50"  r="1"   fill="white" opacity="0.5"/>
+  <circle cx="340" cy="120" r="2"   fill="white" opacity="0.6"/>
+  <circle cx="500" cy="40"  r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="620" cy="100" r="1"   fill="white" opacity="0.4"/>
+  <circle cx="750" cy="60"  r="2"   fill="white" opacity="0.7"/>
+  <circle cx="880" cy="130" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="960" cy="40"  r="1"   fill="white" opacity="0.6"/>
+  <circle cx="150" cy="200" r="1"   fill="white" opacity="0.4"/>
+  <circle cx="430" cy="180" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="700" cy="200" r="1"   fill="white" opacity="0.6"/>
+  <circle cx="920" cy="240" r="2"   fill="white" opacity="0.4"/>
+  <circle cx="55"  cy="300" r="1"   fill="white" opacity="0.3"/>
+  <circle cx="290" cy="270" r="1.5" fill="white" opacity="0.5"/>
+</svg>
+
+<div class="moon">
+  <div class="moon-crater1"></div>
+  <div class="moon-crater2"></div>
+</div>
+
+<svg class="skyline" viewBox="0 0 1080 160" preserveAspectRatio="none">
+  <rect x="0"   y="60"  width="60"  height="100" fill="#0d1420"/>
+  <rect x="10"  y="40"  width="40"  height="20"  fill="#0d1420"/>
+  <rect x="24"  y="30"  width="12"  height="12"  fill="#0d1420"/>
+  <rect x="70"  y="80"  width="80"  height="80"  fill="#0d1420"/>
+  <rect x="85"  y="55"  width="50"  height="28"  fill="#0d1420"/>
+  <rect x="155" y="50"  width="50"  height="110" fill="#0d1420"/>
+  <rect x="162" y="38"  width="36"  height="14"  fill="#0d1420"/>
+  <rect x="178" y="28"  width="4"   height="12"  fill="#34d399" opacity="0.6"/>
+  <rect x="210" y="70"  width="70"  height="90"  fill="#0d1420"/>
+  <rect x="218" y="48"  width="54"  height="24"  fill="#0d1420"/>
+  <rect x="285" y="40"  width="45"  height="120" fill="#0d1420"/>
+  <rect x="293" y="25"  width="29"  height="16"  fill="#0d1420"/>
+  <rect x="333" y="72"  width="55"  height="88"  fill="#0d1420"/>
+  <rect x="345" y="55"  width="31"  height="18"  fill="#0d1420"/>
+  <rect x="78"  y="88"  width="8" height="6" rx="1" fill="#fbbf24" opacity="0.6"/>
+  <rect x="92"  y="88"  width="8" height="6" rx="1" fill="#fbbf24" opacity="0.4"/>
+  <rect x="78"  y="102" width="8" height="6" rx="1" fill="#fbbf24" opacity="0.3"/>
+  <rect x="106" y="95"  width="8" height="6" rx="1" fill="#93c5fd" opacity="0.5"/>
+  <rect x="162" y="60"  width="7" height="5" rx="1" fill="#fbbf24" opacity="0.5"/>
+  <rect x="175" y="60"  width="7" height="5" rx="1" fill="#fbbf24" opacity="0.3"/>
+  <rect x="218" y="76"  width="8" height="6" rx="1" fill="#93c5fd" opacity="0.5"/>
+  <rect x="230" y="76"  width="8" height="6" rx="1" fill="#fbbf24" opacity="0.4"/>
+  <rect x="294" y="44"  width="7" height="5" rx="1" fill="#fbbf24" opacity="0.6"/>
+  <rect x="294" y="56"  width="7" height="5" rx="1" fill="#93c5fd" opacity="0.4"/>
+  <rect x="395" y="55"  width="90"  height="105" fill="#0d1420"/>
+  <rect x="408" y="36"  width="64"  height="21"  fill="#0d1420"/>
+  <rect x="488" y="68"  width="60"  height="92"  fill="#0d1420"/>
+  <rect x="552" y="44"  width="80"  height="116" fill="#0d1420"/>
+  <rect x="562" y="26"  width="60"  height="20"  fill="#0d1420"/>
+  <rect x="634" y="60"  width="55"  height="100" fill="#0d1420"/>
+  <rect x="691" y="50"  width="70"  height="110" fill="#0d1420"/>
+  <rect x="700" y="32"  width="52"  height="20"  fill="#0d1420"/>
+  <rect x="724" y="22"  width="4"   height="12"  fill="#ef4444" opacity="0.7"/>
+  <rect x="763" y="62"  width="60"  height="98"  fill="#0d1420"/>
+  <rect x="825" y="38"  width="85"  height="122" fill="#0d1420"/>
+  <rect x="838" y="20"  width="59"  height="20"  fill="#0d1420"/>
+  <rect x="912" y="55"  width="70"  height="105" fill="#0d1420"/>
+  <rect x="984" y="70"  width="100" height="90"  fill="#0d1420"/>
+  <rect x="560" y="50"  width="8" height="6" rx="1" fill="#fbbf24" opacity="0.5"/>
+  <rect x="574" y="50"  width="8" height="6" rx="1" fill="#fbbf24" opacity="0.3"/>
+  <rect x="695" y="58"  width="7" height="5" rx="1" fill="#93c5fd" opacity="0.6"/>
+  <rect x="831" y="45"  width="7" height="5" rx="1" fill="#fbbf24" opacity="0.6"/>
+  <rect x="844" y="45"  width="7" height="5" rx="1" fill="#fbbf24" opacity="0.4"/>
+</svg>
+
+<div class="ground"></div>
+<div class="track"></div>
+<div class="track-dashes"></div>
+
+<div class="top-bar">
+  <div>
+    <div class="date-tag">{{RUN_EMOJI}} {{RUN_LABEL}}</div>
+    <div class="date-main">{{DATE}}</div>
+  </div>
+  <div class="done-badge">✓ 完成！</div>
+</div>
+
+<div class="dist-block">
+  <div class="dist-eyebrow">TODAY · RUN</div>
+  <div class="dist-main">
+    <div class="dist-num">{{DISTANCE}}</div>
+    <div class="dist-km">KM</div>
+  </div>
+</div>
+
+<svg style="position:absolute;right:20px;bottom:292px;z-index:15;"
+     viewBox="0 0 500 600" width="500" height="600">
+
+  <ellipse cx="245" cy="590" rx="115" ry="16" fill="rgba(52,211,153,0.15)"/>
+
+  <line x1="20"  y1="280" x2="130" y2="268" stroke="#34d399" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  <line x1="10"  y1="308" x2="125" y2="300" stroke="#34d399" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+  <line x1="30"  y1="336" x2="128" y2="330" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+  <line x1="0"   y1="254" x2="110" y2="246" stroke="white"   stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+
+  <path d="M 218 342 C 200 390 178 432 162 452"
+        stroke="#f59e0b" stroke-width="40" stroke-linecap="round" fill="none"/>
+  <path d="M 162 452 C 148 418 150 378 162 352"
+        stroke="#fbbf24" stroke-width="34" stroke-linecap="round" fill="none"/>
+  <circle cx="162" cy="452" r="21" fill="#f59e0b"/>
+  <ellipse cx="158" cy="345" rx="42" ry="20" fill="#6366f1" transform="rotate(-25,158,345)"/>
+  <ellipse cx="158" cy="345" rx="42" ry="9"  fill="#818cf8" transform="rotate(-25,158,345)" opacity="0.8"/>
+  <ellipse cx="148" cy="338" rx="14" ry="8"  fill="white"   transform="rotate(-25,148,338)" opacity="0.7"/>
+
+  <g transform="rotate(-12, 250, 290)">
+    <rect x="192" y="220" width="96" height="122" rx="34" fill="#f59e0b"/>
+    <rect x="192" y="230" width="96" height="42" rx="28" fill="rgba(255,255,255,0.12)"/>
+    <rect x="235" y="225" width="14" height="110" rx="7" fill="rgba(255,255,255,0.15)"/>
+    <rect x="192" y="230" width="14" height="104" rx="7" fill="rgba(0,0,0,0.12)"/>
+    <rect x="274" y="230" width="14" height="104" rx="7" fill="rgba(0,0,0,0.12)"/>
+  </g>
+
+  <g transform="rotate(-68, 282, 256)">
+    <rect x="268" y="232" width="34" height="100" rx="17" fill="#fbbf24"/>
+    <circle cx="285" cy="328" r="22" fill="#f59e0b"/>
+  </g>
+
+  <g transform="rotate(52, 192, 260)">
+    <rect x="168" y="234" width="34" height="100" rx="17" fill="#fbbf24"/>
+    <circle cx="185" cy="330" r="20" fill="#f59e0b"/>
+  </g>
+
+  <path d="M 268 338 C 292 368 312 408 318 442"
+        stroke="#f59e0b" stroke-width="40" stroke-linecap="round" fill="none"/>
+  <path d="M 318 442 C 314 482 300 520 282 542"
+        stroke="#fbbf24" stroke-width="34" stroke-linecap="round" fill="none"/>
+  <circle cx="318" cy="442" r="21" fill="#f59e0b"/>
+  <rect x="244" y="530" width="80" height="32" rx="16" fill="#6366f1"/>
+  <rect x="242" y="560" width="84" height="12" rx="6" fill="#818cf8"/>
+  <rect x="248" y="522" width="28" height="16" rx="8" fill="white" opacity="0.9"/>
+
+  <rect x="226" y="198" width="28" height="32" rx="14" fill="#fcd34d"
+        transform="rotate(-12, 240, 214)"/>
+
+  <g transform="rotate(-10, 248, 162)">
+    <circle cx="248" cy="155" r="68" fill="#fcd34d"/>
+
+    <path d="M184,138 Q190,68 248,58 Q310,48 316,132
+             Q302,75 248,70 Q194,70 184,138Z" fill="#1e293b"/>
+    <path d="M184,138 Q172,100 180,78 Q178,108 186,138Z" fill="#1e293b"/>
+    <path d="M316,128 Q330,95 322,74 Q328,100 318,132Z" fill="#1e293b"/>
+    <path d="M196,80 Q225,60 255,62 Q225,72 210,95Z" fill="#334155"/>
+    <path d="M182,100 Q170,85 175,70 Q168,58 162,55 Q172,62 176,76 Q172,90 182,100Z" fill="#1e293b" opacity="0.8"/>
+    <path d="M175,120 Q162,105 165,88 Q158,78 152,75 Q165,82 168,95 Q165,110 175,120Z" fill="#1e293b" opacity="0.6"/>
+
+    <ellipse cx="180" cy="162" rx="15" ry="19" fill="#f59e0b"/>
+    <ellipse cx="316" cy="160" rx="15" ry="19" fill="#f59e0b"/>
+
+    <path d="M184,128 Q248,118 316,130" stroke="#6366f1" stroke-width="12"
+          fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M184,128 Q248,118 316,130" stroke="#818cf8" stroke-width="4"
+          fill="none" stroke-linecap="round" opacity="0.5"/>
+
+    <path d="M208,138 Q222,126 238,130" stroke="#1e293b" stroke-width="6"
+          fill="none" stroke-linecap="round"/>
+    <path d="M258,128 Q274,122 290,130" stroke="#1e293b" stroke-width="6"
+          fill="none" stroke-linecap="round"/>
+
+    <ellipse cx="222" cy="148" rx="15" ry="9" fill="#1e293b"/>
+    <ellipse cx="272" cy="146" rx="15" ry="9" fill="#1e293b"/>
+    <ellipse cx="227" cy="144" rx="6" ry="4" fill="white" opacity="0.85"/>
+    <ellipse cx="277" cy="142" rx="6" ry="4" fill="white" opacity="0.85"/>
+
+    <path d="M242,170 Q250,178 258,170" stroke="#e07b39" stroke-width="3"
+          fill="none" stroke-linecap="round"/>
+
+    <path d="M220,186 Q248,200 278,186" stroke="#b45309" stroke-width="3.5"
+          fill="rgba(180,83,9,0.1)" stroke-linecap="round"/>
+    <rect x="233" y="188" width="32" height="10" rx="5" fill="white" opacity="0.7"/>
+
+    <ellipse cx="200" cy="178" rx="18" ry="11" fill="rgba(251,113,50,0.3)"/>
+    <ellipse cx="292" cy="175" rx="18" ry="11" fill="rgba(251,113,50,0.3)"/>
+  </g>
+
+  <path d="M186,100 Q178,82 186,70 Q194,82 186,100Z" fill="#67e8f9" opacity="0.8"/>
+  <path d="M170,128 Q160,106 170,92 Q180,106 170,128Z" fill="#67e8f9" opacity="0.65"/>
+  <path d="M200,78  Q193,62  200,52  Q207,62  200,78Z"  fill="#67e8f9" opacity="0.5"/>
+  <path d="M155,158 Q144,136 156,122 Q166,136 155,158Z" fill="#67e8f9" opacity="0.4"/>
+
+</svg>
+
+<div class="caption">
+  <div class="caption-inner">{{CAPTION}}</div>
+</div>
+
+<div class="card">
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-val">{{DURATION}}</div>
+      <div class="stat-lbl">⏱ 时长</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">{{PACE}}</div>
+      <div class="stat-lbl">🏃 配速/km</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">{{HEARTRATE}}</div>
+      <div class="stat-lbl">❤️ 心率 bpm</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">{{CALORIES}}</div>
+      <div class="stat-lbl">🔥 消耗 kcal</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="bottom-row">
+    <div class="tags">{{HASHTAGS}}</div>
+    <div class="via">via Strava</div>
+  </div>
+</div>
+
+</body>
+</html>
