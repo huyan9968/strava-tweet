@@ -15,10 +15,10 @@ if not GITHUB_TOKEN and 'GITHUB_TOKEN' in os.environ:
     GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY', 'huyan9968/strava-tweet')
 
-TWITTER_API_KEY            = os.environ.get('TWITTER_API_KEY', '')
-TWITTER_API_SECRET         = os.environ.get('TWITTER_API_SECRET', '')
-TWITTER_ACCESS_TOKEN       = os.environ.get('TWITTER_ACCESS_TOKEN', '')
-TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('TWITTER_ACCESS_TOKEN_SECRET', '')
+TWITTER_API_KEY            = os.environ.get('CONSUMER_KEY', '')
+TWITTER_API_SECRET         = os.environ.get('CONSUMER_KEY_SECRET', '')
+TWITTER_ACCESS_TOKEN       = os.environ.get('ACCESS_TOKEN', '')
+TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET', '')
 
 
 def get_strava_token():
