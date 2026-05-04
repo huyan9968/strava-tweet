@@ -366,6 +366,7 @@ def update_activities_json(detail, activity_id, md_filename, map_url):
     existing = any(a['id'] == activity_id for a in data['activities'])
 
     if not existing:
+        latlng = detail.get('start_latlng') or []
         activity_data = {
             "id": activity_id,
             "date": (detail.get('start_date_local') or detail['start_date'])[:10],
@@ -373,12 +374,13 @@ def update_activities_json(detail, activity_id, md_filename, map_url):
             "distance": round(distance, 1),
             "duration": duration,
             "moving_time": detail.get('moving_time', duration),
-            "pace": int(1000 / speed_ms * 60) if speed_ms > 0 else 0,  # 秒/公里
-            "speed_ms": round(speed_ms, 2),
+            "pace": int(1000 / speed_ms) if speed_ms > 0 else 0,
+            "speed_ms": round(speed_ms, 3),
             "average_heartrate": detail.get('average_heartrate'),
             "max_heartrate": detail.get('max_heartrate'),
             "calories": detail.get('calories'),
             "elevation_gain": detail.get('total_elevation_gain', 0),
+            "start_latlng": latlng if len(latlng) == 2 else None,
             "polyline": polyline_data,
             "type": detail.get('sport_type', 'Run'),
             "map_url": map_url or '',
