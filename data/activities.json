@@ -25,7 +25,9 @@
       "type": "Run",
       "strava_url": "https://www.strava.com/activities/18354214426",
       "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18354214426.png",
-      "md_file": "runs/2026-05-03-run-18354214426.md"
+      "md_file": "runs/2026-05-03-run-18354214426.md",
+      "tweeted": true,
+      "tweet_id": "2051318410412478498"
     },
     {
       "id": 18352118863,
