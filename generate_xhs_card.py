@@ -84,8 +84,9 @@ def create_xhs_card(distance_km, duration_sec, speed_ms,
 
     hashtags = f"#跑步 #运动打卡 #{hashtag_type} #跑步打卡"
 
+    template_name = 'xhs_card_morning.html' if is_morning else 'xhs_card.html'
     template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 'templates', 'xhs_card.html')
+                                 'templates', template_name)
     with open(template_path, 'r', encoding='utf-8') as f:
         html = f.read()
 
