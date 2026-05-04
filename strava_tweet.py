@@ -15,10 +15,16 @@ if not GITHUB_TOKEN and 'GITHUB_TOKEN' in os.environ:
     GITHUB_TOKEN = os.environ['GITHUB_TOKEN']
 GITHUB_REPO = os.environ.get('GITHUB_REPOSITORY', 'huyan9968/strava-tweet')
 
-TWITTER_API_KEY            = os.environ.get('CONSUMER_KEY', '')
-TWITTER_API_SECRET         = os.environ.get('CONSUMER_KEY_SECRET', '')
-TWITTER_ACCESS_TOKEN       = os.environ.get('ACCESS_TOKEN', '')
+TWITTER_API_KEY             = os.environ.get('CONSUMER_KEY', '')
+TWITTER_API_SECRET          = os.environ.get('CONSUMER_KEY_SECRET', '')
+TWITTER_ACCESS_TOKEN        = os.environ.get('ACCESS_TOKEN', '')
 TWITTER_ACCESS_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET', '')
+
+THREADS_USER_ID      = os.environ.get('THREADS_USER_ID', '')
+THREADS_ACCESS_TOKEN = os.environ.get('THREADS_ACCESS_TOKEN', '')
+
+INSTAGRAM_USER_ID      = os.environ.get('INSTAGRAM_USER_ID', '')
+INSTAGRAM_ACCESS_TOKEN = os.environ.get('INSTAGRAM_ACCESS_TOKEN', '')
 
 
 def get_strava_token():
@@ -170,6 +176,59 @@ def post_to_twitter(text, image_path=None):
         return tweet_id
     except Exception as e:
         print(f"发推失败: {e}", file=sys.stderr)
+        return None
+
+
+def post_to_threads(text):
+    if not all([THREADS_USER_ID, THREADS_ACCESS_TOKEN]):
+        print("未配置 Threads 凭据，跳过。")
+        return None
+    try:
+        resp = requests.post(
+            f'https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads',
+            params={'media_type': 'TEXT', 'text': text, 'access_token': THREADS_ACCESS_TOKEN}
+        )
+        resp.raise_for_status()
+        creation_id = resp.json()['id']
+
+        resp2 = requests.post(
+            f'https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads_publish',
+            params={'creation_id': creation_id, 'access_token': THREADS_ACCESS_TOKEN}
+        )
+        resp2.raise_for_status()
+        post_id = resp2.json()['id']
+        print(f"Threads 发布成功！ID: {post_id}")
+        return post_id
+    except Exception as e:
+        print(f"Threads 发布失败: {e}", file=sys.stderr)
+        return None
+
+
+def post_to_instagram(caption, image_url):
+    if not all([INSTAGRAM_USER_ID, INSTAGRAM_ACCESS_TOKEN]):
+        print("未配置 Instagram 凭据，跳过。")
+        return None
+    if not image_url:
+        print("Instagram 需要图片，无路线地图跳过。")
+        return None
+    try:
+        resp = requests.post(
+            f'https://graph.instagram.com/v21.0/{INSTAGRAM_USER_ID}/media',
+            params={'image_url': image_url, 'caption': caption, 'access_token': INSTAGRAM_ACCESS_TOKEN}
+        )
+        resp.raise_for_status()
+        creation_id = resp.json()['id']
+
+        resp2 = requests.post(
+            f'https://graph.instagram.com/v21.0/{INSTAGRAM_USER_ID}/media_publish',
+            params={'creation_id': creation_id, 'access_token': INSTAGRAM_ACCESS_TOKEN}
+        )
+        resp2.raise_for_status()
+        post_id = resp2.json()['id']
+        print(f"Instagram 发布成功！ID: {post_id}")
+        return post_id
+    except Exception as e:
+        print(f"Instagram 发布失败: {e}", file=sys.stderr)
         return None
 
 
@@ -443,12 +502,18 @@ def main():
     issue_url = create_github_issue(title, body)
     print(f"Issue 已创建：{issue_url}")
 
-    # ── 发布推文 ──────────────────────────────────────
+    # ── 发布到各平台 ─────────────────────────────────
     print("发布推文...")
-    tweet_id = post_to_twitter(tweet, map_file)
-    if tweet_id:
-        mark_as_tweeted(activity_id, tweet_id)
-        print("推文发布成功，已记录。")
+    tweet_id = post_to_twitter(tweet)
+
+    print("发布到 Threads...")
+    post_to_threads(tweet)
+
+    print("发布到 Instagram...")
+    post_to_instagram(tweet, map_url)
+
+    mark_as_tweeted(activity_id, tweet_id or 'unknown')
+    print("所有平台发布完成，已记录。")
 
 
 if __name__ == '__main__':
