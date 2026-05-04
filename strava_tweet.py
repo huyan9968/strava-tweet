@@ -158,24 +158,13 @@ def post_to_twitter(text, image_path=None):
     try:
         import tweepy
 
-        media_ids = None
-        if image_path and os.path.exists(image_path):
-            auth = tweepy.OAuth1UserHandler(
-                TWITTER_API_KEY, TWITTER_API_SECRET,
-                TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET
-            )
-            api = tweepy.API(auth)
-            media = api.media_upload(filename=image_path)
-            media_ids = [media.media_id]
-            print(f"图片已上传，media_id: {media.media_id}")
-
         client = tweepy.Client(
             consumer_key=TWITTER_API_KEY,
             consumer_secret=TWITTER_API_SECRET,
             access_token=TWITTER_ACCESS_TOKEN,
             access_token_secret=TWITTER_ACCESS_TOKEN_SECRET
         )
-        response = client.create_tweet(text=text, media_ids=media_ids)
+        response = client.create_tweet(text=text)
         tweet_id = response.data['id']
         print(f"推文已发布！https://x.com/i/web/status/{tweet_id}")
         return tweet_id
