@@ -1,9 +1,34 @@
 {
-  "total_activities": 468,
-  "total_distance": 4298.7,
-  "total_duration": 1525603,
+  "total_activities": 469,
+  "total_distance": 4309.2,
+  "total_duration": 1529474,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18391927222,
+      "date": "2026-05-06",
+      "title": "Morning Run",
+      "distance": 10.5,
+      "duration": 3871,
+      "moving_time": 3871,
+      "pace": 368,
+      "speed_ms": 2.715,
+      "average_heartrate": 129.4,
+      "max_heartrate": 163.0,
+      "calories": 616.0,
+      "elevation_gain": 32.0,
+      "start_latlng": [
+        35.28429,
+        138.878069
+      ],
+      "polyline": "ymjvE{rsnYEw@D_AGSUScA_@QKMSEW?YDm@G}@AyBTs@ZsAD]TqABo@?QEUMg@Yo@Ii@@YFm@?}@Lw@FQLMPGvANjA\\\\Nf@b@r@|@Vr@Hd@NZHh@@lAHv@Xx@Zr@XXf@T^X`@RPNb@Xt@\\z@p@HLZRD?^g@@k@LgAHwBFs@Nu@NQ@IPsAHeAz@aHDq@Nq@Dq@^cBZqC`@{BL{@Nq@Js@b@yARi@f@}@d@}@`@wAPOL_@^s@RWrAcAHMCSt@WZWr@cAREj@m@ZGHGX_@l@m@t@g@^y@JOrAaAXYl@a@ZYf@[`Aw@VQWFIJBB|@u@ZQOLk@T]b@DRLBGCDWHQTUnAm@jA}@l@WfA{@n@[r@q@h@WdA_AnBkAx@k@XYp@c@fAm@vAc@ZGrACfCMhB@rCUdAUd@Ed@Mj@]nAc@b@c@^Wj@Ul@a@r@Qh@[r@SLIj@Mp@In@Sl@E|@Sn@SfAKdA[zBc@n@Yn@QlASf@Md@CNITWLI^Et@UrBa@hBi@`AOd@Ul@MZC^FHA~@_@v@Op@Qn@YPGNKdAe@fC{A`AW\\QxB{Ah@Yd@Sd@Kn@a@nAm@^M`@GNMn@]\\Yn@OpAm@n@a@tAeA`@]Vc@XiAJ_APkADm@`AuDNiARu@TeAPe@jA{DFQ\\e@XcB^y@DSf@s@Z[P[FGHC`AC^H`AJt@TtB\\fAC|A[ZIRKf@m@t@w@dAy@Xa@Xw@V_@VO`@IlADt@J~@VnAPrBp@d@H^LvBd@pAl@pA`APFJ?DCb@q@H?FBHLR`@^RRX^@z@Pl@Fh@JdA^tBh@nBp@dAPt@Eh@A`BObCm@hAe@~@Un@[n@Sf@S`AOrAGl@@dBGjAIp@@JAVIXCp@Aj@Fh@K|@ErDc@lA[dBm@pA[^Ef@SzAUXMf@M`@Qp@OrAc@hBe@~A{@rA[z@i@t@[dB_@pCaAn@[|@Yp@O~C{Ap@SjAm@n@Ud@Kh@[b@ETEvAi@RMr@m@@GHGLAXB\\Ej@SNIHALEdAk@`@O@I?M]s@CWFk@HYFu@Lc@Zw@NO`@YHM_AqB",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18391927222.png",
+      "md_file": "runs/2026-05-06-run-18391927222.md",
+      "strava_url": "https://www.strava.com/activities/18391927222",
+      "tweeted": true,
+      "tweet_id": "2051795077060509912"
+    },
     {
       "id": 18354214426,
       "date": "2026-05-03",
