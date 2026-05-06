@@ -3,7 +3,11 @@ import os
 import sys
 import json
 import base64
+import smtplib
 import requests
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 from datetime import datetime
 
 STRAVA_CLIENT_ID = os.environ['STRAVA_CLIENT_ID']
@@ -230,6 +234,43 @@ def post_to_instagram(caption, image_url):
     except Exception as e:
         print(f"Instagram 发布失败: {e}", file=sys.stderr)
         return None
+
+
+def send_card_email(subject, text_body, card_path, to_addr):
+    gmail_user = os.environ.get('GMAIL_USER', '')
+    gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
+    if not gmail_user or not gmail_pass:
+        print("未配置 GMAIL_USER / GMAIL_APP_PASSWORD，跳过邮件发送")
+        return
+
+    msg = MIMEMultipart('related')
+    msg['From']    = gmail_user
+    msg['To']      = to_addr
+    msg['Subject'] = subject
+
+    # 正文（inline 图片 + 文字）
+    html = f"""
+<html><body>
+<img src="cid:xhs_card" style="max-width:540px;display:block;margin:0 auto;border-radius:16px;">
+<pre style="font-family:sans-serif;margin-top:20px;color:#333;">{text_body}</pre>
+</body></html>"""
+    msg.attach(MIMEText(html, 'html', 'utf-8'))
+
+    if card_path and os.path.exists(card_path):
+        with open(card_path, 'rb') as f:
+            img = MIMEImage(f.read(), _subtype='png')
+        img.add_header('Content-ID', '<xhs_card>')
+        img.add_header('Content-Disposition', 'inline', filename='xhs_card.png')
+        msg.attach(img)
+
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+            smtp.starttls()
+            smtp.login(gmail_user, gmail_pass)
+            smtp.send_message(msg)
+        print(f"邮件已发送至 {to_addr}")
+    except Exception as e:
+        print(f"邮件发送失败: {e}", file=sys.stderr)
 
 
 def create_github_issue(title, body):
@@ -503,6 +544,13 @@ def main():
 
     issue_url = create_github_issue(title, body)
     print(f"Issue 已创建：{issue_url}")
+
+    # ── 发送邮件（卡片图 + 文案） ────────────────────
+    card_path_local = f'/tmp/xhs_{activity_id}.png'
+    email_subject   = f"🏃 跑步打卡 {date_str} · {distance:.1f}km"
+    email_body      = xhs_caption or tweet
+    send_card_email(email_subject, email_body, card_path_local,
+                    to_addr='canghai8005@gmail.com')
 
     # ── 发布到各平台 ─────────────────────────────────
     print("发布推文...")
