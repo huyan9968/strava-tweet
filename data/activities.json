@@ -1,9 +1,34 @@
 {
-  "total_activities": 469,
-  "total_distance": 4309.2,
-  "total_duration": 1529474,
+  "total_activities": 470,
+  "total_distance": 4319.8,
+  "total_duration": 1533287,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18430970005,
+      "date": "2026-05-09",
+      "title": "Morning Run",
+      "distance": 10.6,
+      "duration": 3813,
+      "moving_time": 3813,
+      "pace": 358,
+      "speed_ms": 2.786,
+      "average_heartrate": 140.8,
+      "max_heartrate": 156.0,
+      "calories": 709.0,
+      "elevation_gain": 22.0,
+      "start_latlng": [
+        35.792364,
+        139.799835
+      ],
+      "polyline": "gumyE}sgtYnBCj@EDFFv@BfACz@HbAC|@JxCCdAFhBEPIJCFMn@@TFX?NE\\Od@If@Bv@GfAIl@?P@HHJJ@b@ER@nA`@j@JDB@FS`@OP[fAWh@Y`@Qb@EPIr@Hv@Gh@_@`Ai@jA[`@EZYv@e@l@MH[@s@MMDGNQdA]~@Ep@CLGLs@nA]~@a@VQPSXI\\m@r@Yr@OLg@|@UPc@l@@d@Gh@?TFb@Ft@Hd@V|@ER_@j@Wx@w@`ACRJv@h@lBp@bB@d@Nn@?^GZa@b@]d@IRInARn@?b@O|@g@pAK^UhAIn@GZAJLrAQpAA~@@v@MdC?`DG~@Sz@GtBKLs@N[PUR]b@SJgAEoALgAG[BMASIKOM{@S]_@Q_AUWWc@s@USICI?IBQ\\YRMPQ~@IRGDI@GEEIEUCs@@a@No@?KCIOMW?GDMd@KbA[nBG|AS~Ac@nBWp@SjAGlBJbBIfABn@AHEFGBI?IEEGCWJQFC^DTAhAQr@GN?^HJJRNFJ?TCb@?zBC`@@FDBf@FFDDF@TCjABb@DHJF^H~ADj@Ht@?\\Bj@Ef@BRDd@Tj@Dl@JRJDN@z@Cb@IPID[DqBQaC?wBOaA@uAPq@Ka@Bc@C[FS@gAUYFSAq@UWWMSEQG}@?k@LaAJUNS\\UZIfAIx@Dz@?b@Dd@PXXN`@Nz@NFRBSAGGEGGsCCGGCc@GEO@_CCw@@MFGHCHBj@l@ZPTFRBf@?RCt@KbA[NOPYLa@Lu@A]Oe@CYAWBKDGFERELBHFZx@z@t@RNd@Nx@b@R@HCDG?I?c@Bk@AkABmADy@Au@N]ZQHCVAd@HJ_C@yBAs@@GDED?f@p@HFRBj@?RBDFBHBp@BHDD\\HFF@FAHO\\Qh@ONo@ZUZGVM`AB~AGp@CtAHbAPx@Tj@RVZTh@PV@hA[d@GN?l@Fh@ZR@TIf@YFGNUV_AJuAXm@Vc@NMjAm@Xe@JYFg@@UIy@K_@GESIcAGWGc@YKQCIEq@Ba@?}BAiBFsBF{@GoAD{ACo@YsCA[@w@LaA?i@BQFKl@?hAGh@S`@Gf@@TDB?BG@KDw@C}@?wAOuBQqACy@BaBLw@Fq@EMQ]EQ?]D{@O}AGuAEuAOy@CWS_GOmAG]IEMCe@DsBk@_B[_@?WIUYXYZi@TYVa@`@a@z@wAVsBDi@PcADEHCrA?NWV]VeB`@o@Nc@P}@Zw@XUUMy@Wo@MEGCKJqAPu@Dg@Hg@@SG]CYBa@CCC?Nc@Ls@TaD?sBTqADk@GaBCwC@UAg@B}@Ay@FgCEm@",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18430970005.png",
+      "md_file": "runs/2026-05-09-run-18430970005.md",
+      "strava_url": "https://www.strava.com/activities/18430970005",
+      "tweeted": true,
+      "tweet_id": "2052884790987383215"
+    },
     {
       "id": 18391927222,
       "date": "2026-05-06",
