@@ -1,9 +1,34 @@
 {
-  "total_activities": 470,
-  "total_distance": 4319.8,
-  "total_duration": 1533287,
+  "total_activities": 471,
+  "total_distance": 4331.9,
+  "total_duration": 1537346,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18444725703,
+      "date": "2026-05-10",
+      "title": "Morning Run",
+      "distance": 12.1,
+      "duration": 4059,
+      "moving_time": 4059,
+      "pace": 334,
+      "speed_ms": 2.988,
+      "average_heartrate": 150.5,
+      "max_heartrate": 171.0,
+      "calories": 815.0,
+      "elevation_gain": 44.0,
+      "start_latlng": [
+        35.791444,
+        139.799822
+      ],
+      "polyline": "oomyE{sgtYNBx@?\\Ft@ANBBLB^?lAD`AAXEFKNQJO@g@?sADMDAHCn@DfAATQv@Ad@NnBQ\\Gr@@r@KxBEjFIx@Ad@MnAGTEv@Mn@@HDHLJfALTJNR@XGRq@~@{@hA]REHEZAhBSn@EFG@k@QSCMJELFL`Ad@zA|@PXFZCd@Mb@Er@Y`B?r@Ap@GFQDGV@`@F`@?h@JtBXvC@f@Hd@D|@?p@PnBCvAYf@^b@H\\O`BBx@C^FhAj@pFKzAAzACHOFqAJU?o@MUBIBKNWLEHGd@?r@AHKN?VCp@D~@I|ANhEEdBSz@AVI^IlAB~@AdAANIVSR[Hg@HgAF[Gk@a@OGYIa@@QJUl@Kn@KV_Al@MRCJGr@FhA@b@GpAIr@?n@CVEHGB]DCBCH?~ANfCHPPFpB?`BDRDDFBREREDQHY@OE_@QOCK?o@Jo@ZGDCFAvAMnA?LBVDJNPr@\\n@j@HL?VOZQt@g@zASXa@X[z@U^OHOFQJG@ECEMJeCCe@?k@CGIEa@GSBIRGFE?A{@F{AEKGGSCgA?oAO{AEuE@_AFq@AWAi@Qy@@u@Ho@@s@DQC]MQQWa@MYG]Eo@BwADYPa@XYRGVC`AD`ABrAPZLLJLTVhANLTBHC@AUIGECI@kBCa@KI[@EACGAwBFyADGFCHBd@d@b@X\\Hj@BX?\\In@WVUX]NYJ_@H_@D_@Mk@A]BMFKNKRCTFDHLf@PNvC|AJDZ@HCDI@KAiHEsAKYkAcBg@e@q@[g@MkACa@KKMMg@Wa@UOw@[SMu@}@o@c@IAI?GDU~@Yn@OXQFGAEEESHmBAYEIGGKAI?IDITMbAU~@Eb@Ad@@ZDPX^BPYxCGJi@?WHGHO\\M`AKnAA`ADbBCfADFX?fBKj@?\\FZNXRh@j@`@VND\\Br@C`AMVKf@c@NQVm@Ja@@YA[Kq@?OBMFKJEJAJ@HFFHPd@FHn@h@f@Zz@p@PH^FJH@RCjBDPLJHBbFcAr@ZVDl@ElAW^A^Dt@TX@JCVQRWXg@Ro@RcAd@gAZ_@n@a@TSHKL]Lq@@_AE_@U]YMq@C[EiAg@e@MYAaBDIDSRU`@G^IxBKj@e@bBQx@@FVZJDb@Ft@f@TF^@PBrA_C~@YvAo@VUXi@Lc@Fe@C_AGSOOUIk@A_@Ee@SMQKgA?iCAw@E_@?sADqAJq@@qBPeCBeACkB?{CBGDArAC^K\\SVGl@BJIBS@kCOmAM{BCsDJ{A?UCSQ]E[?c@LoASiBKsBU{BCiAGq@EaBIoBDg@NYFSB_@Ae@Bi@ZgCVwAAIGE_@U{Ag@k@WCGAm@@EDAZAV@FCb@o@Tm@Nk@Xk@h@sA`@cBBWASCCaB_@GCAGDeCFeA@o@B[VwAB}BZeD@o@Fw@A{@Gy@HqA?u@Go@HoDG{@",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18444725703.png",
+      "md_file": "runs/2026-05-10-run-18444725703.md",
+      "strava_url": "https://www.strava.com/activities/18444725703",
+      "tweeted": true,
+      "tweet_id": "2053245843528925414"
+    },
     {
       "id": 18430970005,
       "date": "2026-05-09",
