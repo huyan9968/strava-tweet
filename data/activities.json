@@ -1,9 +1,34 @@
 {
-  "total_activities": 472,
-  "total_distance": 4341.9,
-  "total_duration": 1540814,
+  "total_activities": 473,
+  "total_distance": 4350.2,
+  "total_duration": 1544167,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18535691168,
+      "date": "2026-05-17",
+      "title": "Morning Run",
+      "distance": 8.3,
+      "duration": 3353,
+      "moving_time": 3353,
+      "pace": 406,
+      "speed_ms": 2.461,
+      "average_heartrate": 129.3,
+      "max_heartrate": 141.0,
+      "calories": 539.0,
+      "elevation_gain": 18.0,
+      "start_latlng": [
+        35.791622,
+        139.799821
+      ],
+      "polyline": "spmyE{sgtYLn@B^D\\?~@DtBARGP?hDFz@AdACb@I|@An@Eh@CbAGrAOnB@\\GVSxAJPRNNF`@@FBBH?JGj@CXMp@Ul@AHDHPHFF\\d@DTM^WXy@bBWt@[dAe@fAMJQ@QEUQG?KHCFRXhAr@TJr@TNNJRATUlAM~AM~@Bd@C`@GRULCFJ`@GtA@`BNbA@lALt@Bl@`@rCDn@@xAG|@B\\DPXNBFa@xECx@^xBDh@Bx@Fv@Jj@Gx@Bp@GxA@|AEb@Cl@@t@BZBt@Ez@J`AA^E^ChB?vAC|@?xAG~AHbBEnABpAGl@DdBAtAD|@CfACTEDGBgAF[Ac@BWE[?i@Hg@?EAEE?SBUVuAFUp@q@p@YTQRUHQT{@D[Eu@IQKOUOq@E[EkAs@a@MOA}@J_AB_@QmAy@OEK?QDSRKPWp@MRONq@^QZUpAJx@G`C@xBBZNb@?JGTu@dAUNMCKQIk@e@e@QYUgAAm@PgA@q@OkCQy@Go@OWe@eA{@_AMIo@Gw@Si@?c@MKIKSQm@c@o@OGYGWK_@W}@y@e@QSCGAEBEt@[pAQVKBICI_@Cg@@[N{@?IAIMMUCI@ILMdAOv@UhCCx@E^_@jB_@rAS~@S`CFrAC^Mj@[XAVHTFBH?h@_@h@Sb@IvA?PDTNHP@LAl@Cb@@`@Ad@Dh@DLb@NJPBT?lAB^BDTHBB?BIDSCe@aBW_@_@UYEy@?qBJg@?QBOFOTUb@Kb@Eb@?h@F~@H\\RV`@N`@?l@DfA?bCr@h@?|@It@Fz@E~@Hn@CZBZNbBFb@EV@t@HNF@D?FK^?NLbANvBQhA@JDR@b@CZMz@@VCp@F`@?N?x@KxAFd@Rl@LFt@BHF@HL|AB|A?lA@XMjBDh@?t@Dd@DL|@t@^Bx@L~@p@d@Rx@f@bARPHf@b@T`@^PhAt@rAhBb@^^b@DLD\\PX`@XXURDHFTXTb@XLh@\\\\Fb@TNJLTH@DA~Ay@TO\\a@z@o@DOGI",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18535691168.png",
+      "md_file": "runs/2026-05-17-run-18535691168.md",
+      "strava_url": "https://www.strava.com/activities/18535691168",
+      "tweeted": true,
+      "tweet_id": "2055797355383759204"
+    },
     {
       "id": 18498431691,
       "date": "2026-05-14",
