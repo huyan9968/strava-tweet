@@ -1,9 +1,34 @@
 {
-  "total_activities": 473,
-  "total_distance": 4350.2,
-  "total_duration": 1544167,
+  "total_activities": 474,
+  "total_distance": 4359.3,
+  "total_duration": 1547570,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 18549529478,
+      "date": "2026-05-18",
+      "title": "Morning Run",
+      "distance": 9.1,
+      "duration": 3403,
+      "moving_time": 3403,
+      "pace": 375,
+      "speed_ms": 2.664,
+      "average_heartrate": 133.7,
+      "max_heartrate": 167.0,
+      "calories": 578.0,
+      "elevation_gain": 22.0,
+      "start_latlng": [
+        35.792013,
+        139.799801
+      ],
+      "polyline": "asmyEwsgtYDChA?FJRbAGzBKnADt@?t@E^Bn@?h@HfADrBKl@At@GRMN[PHXDAFBBPATUfC?^BLIZEVEb@EjAK|@G|@Ib@BHLJl@Pj@XHF?FGP_@d@QHSB}@d@QPWb@KJ@NCT@hAD|ABTQ?[OCBSL?Fh@v@PP^Lf@Hd@PZTFPGr@a@nAKf@MhA?`@Cj@CHWPAHDTBp@I\\?HFx@?p@Jv@FjBP~@Rv@Ft@?FOv@NfB@|@Bn@Cd@?DDDZHFNUlBE~BDhAR|@NhCCLK@eEG[BKFEHIf@JrBAxCEz@Fh@K`A@fAIvADbACb@@xAC^Fj@@j@C\\?nAGl@AbA?p@Gr@KHW@gAGs@?m@Ia@KQI][SI_@CQFKRYlAMXUXu@`@IRC`A?nAMxBAf@Dp@Pv@eBpCwAIGGCMBqCGw@K_CFs@AeADo@?i@Gs@Si@k@u@a@u@KMSE{@Is@Qo@G[OOMWu@OS]Ug@Q_@S][m@s@[SKCI@GFCl@CPg@zAGHIDIAGCISCu@@_@Jo@?UKOIAI@MLSf@c@~DIfAQ~Ag@tBWx@Kp@Gr@AhAJzA?f@Gp@@d@CHGDIBIAGEE[DQJG^DJAfAWh@E\\?j@H\\LHHVb@RRd@X\\N^Fj@@d@EvAw@b@u@J_@Hw@Ks@AQ@ODOHMJIJAJB\\t@v@r@jBfAh@NTLBVAnB@FHJPBTAdBIl@i@NENALBZR\\Lz@Cz@Wb@ETBn@Lb@TNBRGPMVWLSn@kBXkAL[b@g@v@_@LKJOVs@H{AG]MSQMKCa@E_@@QEOIYYKQAKHg@A}@Eq@JqCGeDBcAD}@F_@Dq@EkA?y@GsA?ULcA@iAEa@EyBF}@DODEjAYH?ZNb@Ed@D^AJI@UA_@EYCk@WaACUPyCHa@?aAE[ECMCCECqBKeBA[Gm@?u@Gw@OgACe@?o@KkA@qAKy@DcACc@DKLIH[?WIm@Bm@`@sCPm@Jg@GEk@Eu@S]Wy@]EEAGBa@@EBAVDT@ZBDABEH[N]BUPo@@_@v@qA\\cAHc@DKTWIQm@[WKi@KEKAMDo@Jg@RkB@gAFq@HYDi@As@JoACo@JmAA_@Ny@@UBy@Cm@H{@C_@M]AK@IDEAmAJeC@e@IaBI]Di@GSMG[Ag@BYF",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_18549529478.png",
+      "md_file": "runs/2026-05-18-run-18549529478.md",
+      "strava_url": "https://www.strava.com/activities/18549529478",
+      "tweeted": true,
+      "tweet_id": "2056167642923184292"
+    },
     {
       "id": 18535691168,
       "date": "2026-05-17",
