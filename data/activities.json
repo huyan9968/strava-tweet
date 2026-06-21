@@ -1,9 +1,34 @@
 {
-  "total_activities": 476,
-  "total_distance": 4381.4,
-  "total_duration": 1556273,
+  "total_activities": 477,
+  "total_distance": 4387.9,
+  "total_duration": 1559102,
   "total_calories": 0,
   "activities": [
+    {
+      "id": 19006361355,
+      "date": "2026-06-21",
+      "title": "Afternoon Run",
+      "distance": 6.5,
+      "duration": 2829,
+      "moving_time": 2829,
+      "pace": 434,
+      "speed_ms": 2.302,
+      "average_heartrate": 132.1,
+      "max_heartrate": 158.0,
+      "calories": 467.0,
+      "elevation_gain": 85.0,
+      "start_latlng": [
+        35.21605,
+        138.918623
+      ],
+      "polyline": "ic}uEkp{nYg@`@g@p@GRGb@EnB@d@BHPPDJBB`@A?@EBcCp@s@XS@cAZgClAo@PYDs@\\aBf@kAVy@l@w@Zi@\\OB[EOBy@`@oAd@o@d@sB~@aAVcBh@_Bt@s@NSHm@b@}@PcBt@uAd@m@LWL}AXWH}Cl@s@Xe@J]Pu@FiCr@u@A}ATUCc@POBYEg@CyCHQASEQ?kAFwALk@Am@Fi@TYNeA\\m@Xi@Pi@Z_A^w@Rm@JeAHaAEm@Hy@MsB_@w@Y_Bc@s@Ww@S_AMu@Co@GQ@MGG}BMgA@i@CgAKcABu@Fk@Ae@FeB?}@QEEO@g@Aq@By@@yBIkBBwBH}@EyAFeACe@@UEe@?]@}BEWLyBCaAMi@MWH]E{@BUEMb@ENQAE@E`@DdABlAVtBn@~@j@fBt@|@\\f@HfAJ`ALt@An@LlBPjAFx@BL?nA[nAa@TETMVIbAS|@]l@Gh@O\\AbBJdCh@dABnDl@bAFr@L|@JX@f@Lh@DhB\\n@Hz@Hv@?PFPHfBZn@Bx@HtABpAOv@Mr@?j@E`@Gf@?x@Cx@MfAGf@MZCXK~@o@b@WfAmAhAy@t@OhAAt@HvAZr@TdARpAd@n@LRLz@VXNTRPV^t@^^FBDARI",
+      "type": "Run",
+      "map_url": "https://raw.githubusercontent.com/huyan9968/strava-tweet/main/maps/map_19006361355.png",
+      "md_file": "runs/2026-06-21-run-19006361355.md",
+      "strava_url": "https://www.strava.com/activities/19006361355",
+      "tweeted": true,
+      "tweet_id": "2068610542785216551"
+    },
     {
       "id": 18895657254,
       "date": "2026-06-13",
